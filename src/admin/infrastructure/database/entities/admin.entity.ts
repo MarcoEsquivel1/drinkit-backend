@@ -8,16 +8,16 @@ export class Admin extends BaseUserWithUuidEntity {
   @Column({ type: 'integer', default: 2, name: 'fk_role_id' })
   roleId?: number;
 
-  @Column({ nullable: true, name: 'reset_token' })
+  @Column({ type: 'varchar', nullable: true, name: 'reset_token' })
   resetToken?: string;
 
-  @Column({ nullable: true, name: 'reset_expires' })
+  @Column({ type: 'timestamptz', nullable: true, name: 'reset_expires' })
   resetExpires?: Date;
 
-  @Column({ default: false, name: 'is_logged_in' })
+  @Column({ type: 'boolean', default: false, name: 'is_logged_in' })
   isLoggedIn?: boolean;
 
-  @ManyToOne(() => Role, (role) => role.admins)
+  @ManyToOne(() => Role, 'admins')
   @JoinColumn({ name: 'fk_role_id' })
   role: Role;
 

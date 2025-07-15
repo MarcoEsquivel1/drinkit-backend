@@ -21,7 +21,5 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "ts-node": {
-    "require": ["./.pnp.cjs"]
-  }
+
 }

@@ -12,15 +12,32 @@ docker-compose -f docker-compose.dev.yml up -d       # Servicios (PostgreSQL, Mo
 ./scripts/dev-setup.sh                               # Configuración automática completa
 # O manualmente:
 # docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
+yarn seeds                                           # Ejecutar seeders (crea tablas y datos)
 yarn start:dev                                       # ¡Listo! 🚀
 ```
 
-**🚀 Aún más fácil con el script automático:**
+**🚀 Configuración Manual Paso a Paso (Windows PowerShell):**
 
-```bash
-./scripts/dev-setup.sh    # ¡Todo en uno!
-yarn start:dev            # Solo resta iniciar
+```powershell
+# 1. Levantar servicios
+docker-compose -f docker-compose.dev.yml up -d
+
+# 2. Esperar que PostgreSQL esté listo
+Start-Sleep -Seconds 15
+
+# 3. Crear bases de datos adicionales (CRÍTICO)
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
+
+# 4. Ejecutar seeders (crea tablas automáticamente y datos iniciales)
+yarn seeds
+
+# 5. Iniciar aplicación
+yarn start:dev
 ```
+
+**⚠️ Nota para Windows**: El script `dev-setup.sh` puede tener problemas de line endings en Windows. Usa la configuración manual paso a paso arriba.
 
 El `.env` viene con valores simples: `secret`, `dinkitjwt`, `PORT=3000` ✅
 
@@ -427,13 +444,67 @@ docker-compose up -d
 
 ## 🔧 Solución de Problemas
 
-### Problemas Comunes
+### Problemas Comunes en Windows
+
+#### ❌ Error: "ColumnTypeUndefinedError: Column type for BaseEntity#createdBy is not defined" (NUEVO PROBLEMA COMÚN)
+
+Este error aparece cuando TypeORM no puede determinar el tipo de una columna:
+
+```bash
+# 🚀 SOLUCIÓN: Ya está corregido en el código
+# Se agregaron tipos explícitos a todas las columnas en las entidades base:
+# - src/shared/infrastructure/database/entities/base/user.base.ts
+# - src/shared/infrastructure/database/entities/base/audited.base.ts
+# - src/shared/infrastructure/database/entities/base/paranoid.base.ts
+
+# Si ves este error, verifica que todas las columnas @Column() tengan type explícito:
+@Column({ type: 'varchar', name: 'created_by' })
+```
+
+#### ❌ Error: "Cannot find module 'src/location/infrastructure/database/entities/...'" (NUEVO PROBLEMA COMÚN)
+
+Este error aparece por importaciones absolutas incorrectas:
+
+```bash
+# 🚀 SOLUCIÓN: Ya está corregido en el código
+# Se cambiaron todas las importaciones de:
+# import { Country } from 'src/location/infrastructure/...'
+# 
+# A importaciones relativas:
+# import { Country } from '../../../../location/infrastructure/...'
+
+# Archivos corregidos:
+# - src/user/infrastructure/database/entities/users-address.entity.ts
+# - src/user/infrastructure/database/entities/users-request.entity.ts
+# - src/promotion/infrastructure/database/entities/coupon-usage.entity.ts
+# - src/order/infrastructure/database/entities/order-detail.entity.ts
+```
+
+#### ❌ Error: "relation 'public.roles' does not exist" después de migraciones (NUEVO PROBLEMA COMÚN)
+
+Las migraciones TypeORM pueden fallar en Windows. Solución usando synchronize temporal:
+
+```powershell
+# 🚀 SOLUCIÓN COMPLETA: Usar seeders con synchronize temporal
+
+# 1. Verificar que los servicios estén corriendo
+docker-compose -f docker-compose.dev.yml ps
+
+# 2. Crear bases de datos si no existen
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;" 2>$null
+
+# 3. Ejecutar seeders (esto crea automáticamente las tablas)
+yarn seeds
+
+# Los seeders usan synchronize temporalmente para crear tablas automáticamente
+# Luego revierte a synchronize: false para seguridad
+```
 
 #### ❌ Error: "database dinkit_dev_db does not exist" (MÁS COMÚN)
 
 Este es el error más frecuente. La aplicación no puede conectarse porque faltan las bases de datos adicionales:
 
-```bash
+```powershell
 # 🚀 SOLUCIÓN RÁPIDA: Usar el script automático
 ./scripts/dev-setup.sh
 
@@ -442,15 +513,15 @@ docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
 
-# Luego ejecutar migraciones y seeders
-yarn migrations && yarn seeds
+# Luego ejecutar seeders
+yarn seeds
 ```
 
-#### ❌ Error: "authentication failed for user dinkit_user" (NUEVO PROBLEMA COMÚN)
+#### ❌ Error: "authentication failed for user dinkit_user" (PROBLEMA COMÚN EN WINDOWS)
 
 Este error aparece frecuentemente después de limpiar Docker o recrear contenedores:
 
-```bash
+```powershell
 # 🚀 SOLUCIÓN COMPLETA: Recrear entorno desde cero
 # 1. Detener y limpiar todos los contenedores y volúmenes
 docker-compose -f docker-compose.dev.yml down -v
@@ -464,23 +535,26 @@ docker-compose -f docker-compose.dev.yml build --no-cache
 # 4. Levantar servicios
 docker-compose -f docker-compose.dev.yml up -d
 
-# 5. Crear usuario de pruebas (necesario después de recrear contenedores)
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'drinkitpass' SUPERUSER CREATEDB;"
+# 5. Esperar que estén listos
+Start-Sleep -Seconds 20
 
-# 6. Crear bases de datos adicionales
+# 6. Crear usuario de pruebas (necesario después de recrear contenedores)
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'secret' SUPERUSER CREATEDB;"
+
+# 7. Crear bases de datos adicionales
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
 
-# 7. Ejecutar migraciones desde el contenedor (más confiable)
-docker exec dinkit_api yarn migrations
+# 8. Ejecutar seeders
+yarn seeds
 ```
 
-#### ❌ Error: "Required package missing from disk" o errores de Yarn PnP
+#### ❌ Error: "Required package missing from disk" o errores de Yarn PnP (PROBLEMA EN WINDOWS)
 
 Este problema aparece después de limpiar caché o disk cleanup en Windows:
 
-```bash
+```powershell
 # 🚀 SOLUCIÓN: Limpiar y reinstalar dependencias
 # 1. Limpiar cache de Yarn
 yarn cache clean --all
@@ -492,88 +566,39 @@ Remove-Item -Recurse -Force .yarn\cache -ErrorAction SilentlyContinue
 # 3. Reinstalar dependencias
 yarn install
 
-# 4. Si persiste, ejecutar migraciones desde el contenedor
-docker exec dinkit_api yarn migrations
+# 4. Si persiste, ejecutar seeders desde el contenedor
+docker exec dinkit_api yarn seeds
 ```
 
-#### ❌ Error: hosts "postgres", "mongo", "redis" not found
+#### ❌ Error de scripts de PowerShell: "f() no se reconoce como comando"
 
-Esto indica que el archivo `.env` está configurado para Docker interno pero ejecutando desde el host:
+Los scripts de package.json pueden fallar en PowerShell de Windows:
 
-```bash
-# 🚀 SOLUCIÓN: Ya está corregido en el .env
-# Los hosts deben ser:
-# - localhost: para ejecutar desde el host (fuera de Docker)
-# - postgres/mongo/redis: para ejecutar desde dentro de Docker
+```powershell
+# 🚀 SOLUCIÓN: Usar comandos directos en lugar de scripts complejos
 
-# El archivo .env está configurado con localhost para desarrollo externo
-# Si ejecutas dentro de Docker, usa estos valores:
-docker exec dinkit_api yarn migrations  # Usa nombres de servicios internos
+# En lugar de: yarn migrations:generate
+npx typeorm-ts-node-commonjs migration:generate -d ./src/shared/infrastructure/config/typeorm.config.ts ./src/shared/infrastructure/database/migrations/NombreMigracion
+
+# En lugar de: yarn migrations  
+npx typeorm-ts-node-commonjs migration:run -d ./src/shared/infrastructure/config/typeorm.config.ts
+
+# O usar tsx en lugar de ts-node:
+npx tsx ./src/run-migrations.ts
 ```
 
-#### Error de conexión a base de datos
+### ⚠️ Configuración Específica para Windows
 
-```bash
-# Verificar que Docker esté corriendo
-docker ps
-
-# Levantar servicios si no están activos
-docker-compose -f docker-compose.dev.yml up -d
-
-# Verificar que PostgreSQL esté completamente listo
-docker logs dinkit_pg
-```
-
-#### Puerto 3000 ocupado
-
-```bash
-# Cambiar puerto en .env
-PORT=3001
-
-# O terminar proceso que usa el puerto
-netstat -ano | findstr :3000
-taskkill /PID [número_de_proceso] /F
-```
-
-#### Error de migraciones
-
-```bash
-# Resetear migraciones
-yarn typeorm:drop
-yarn migrations
-yarn seeds
-```
-
-#### Variables de entorno no reconocidas
-
-```bash
-# Verificar que el archivo .env existe
-ls -la .env
-
-# Verificar contenido
-cat .env | head -10
-```
-
-#### Problemas con Yarn
-
-```bash
-# Limpiar cache y reinstalar
-rm -rf node_modules yarn.lock
-yarn install
-```
-
-### ⚠️ Cambios Importantes Después de Disk Cleanup
-
-Después de hacer limpieza de disco en Windows, es probable que necesites:
+**Después de hacer limpieza de disco en Windows**, es probable que necesites:
 
 1. **Recrear completamente el entorno Docker** (contenedores, volúmenes, imágenes)
 2. **Reinstalar dependencias de Yarn** (caché corrompido)
 3. **Recrear usuarios de PostgreSQL** (volúmenes recreados)
 4. **Recrear bases de datos** (datos perdidos en limpieza)
 
-**Script de recuperación completa:**
+**Script de recuperación completa para Windows:**
 
-```bash
+```powershell
 # Detener todo
 docker-compose -f docker-compose.dev.yml down -v
 
@@ -594,21 +619,68 @@ docker-compose -f docker-compose.dev.yml up -d
 Start-Sleep -Seconds 20
 
 # Recrear usuarios y bases de datos
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'drinkitpass' SUPERUSER CREATEDB;"
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'secret' SUPERUSER CREATEDB;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
 
-# Ejecutar migraciones
-docker exec dinkit_api yarn migrations
-
-# Ejecutar seeders
-docker exec dinkit_api yarn seeds
+# Ejecutar seeders (crea tablas y datos)
+yarn seeds
 ```
 
-### Comandos de Diagnóstico
+### Problemas Generales (Multiplataforma)
+
+#### Error de conexión a base de datos
 
 ```bash
+# Verificar que Docker esté corriendo
+docker ps
+
+# Levantar servicios si no están activos
+docker-compose -f docker-compose.dev.yml up -d
+
+# Verificar que PostgreSQL esté completamente listo
+docker logs dinkit_pg
+```
+
+#### Puerto 3000 ocupado
+
+```bash
+# Cambiar puerto en .env
+PORT=3001
+
+# O terminar proceso que usa el puerto (Windows)
+netstat -ano | findstr :3000
+taskkill /PID [número_de_proceso] /F
+
+# Linux/Mac
+lsof -ti:3000 | xargs kill
+```
+
+#### Variables de entorno no reconocidas
+
+```bash
+# Verificar que el archivo .env existe
+ls -la .env  # Linux/Mac
+dir .env     # Windows
+
+# Verificar contenido
+cat .env | head -10    # Linux/Mac
+Get-Content .env       # Windows PowerShell
+```
+
+#### Problemas con Yarn
+
+```bash
+# Limpiar cache y reinstalar
+rm -rf node_modules yarn.lock  # Linux/Mac
+Remove-Item -Recurse -Force node_modules, yarn.lock  # Windows PowerShell
+yarn install
+```
+
+### Comandos de Diagnóstico para Windows
+
+```powershell
 # Verificar estado de servicios Docker
 docker-compose -f docker-compose.dev.yml ps
 
@@ -627,14 +699,20 @@ docker exec dinkit_pg psql -U dinkit_user -d postgres -c "\du"
 # Conectarse a PostgreSQL para diagnóstico
 docker exec -it dinkit_pg psql -U dinkit_user -d dinkit_dev_db
 
+# Verificar que todas las tablas se crearon
+docker exec dinkit_pg psql -U dinkit_user -d dinkit_dev_db -c "\dt"
+
+# Verificar datos de seeders
+docker exec dinkit_pg psql -U dinkit_user -d dinkit_dev_db -c "SELECT COUNT(*) FROM roles; SELECT COUNT(*) FROM countries; SELECT COUNT(*) FROM admins;"
+
 # Conectarse a MongoDB
-docker exec -it dinkit_mongo mongosh --host localhost --port 27017 -u dinkit_audit_user -p drinkitpass
+docker exec -it dinkit_mongo mongosh --host localhost --port 27017 -u dinkit_audit_user -p secret
 
 # Verificar conexión a Redis
 docker exec -it dinkit_redis redis-cli ping
 
 # Ver todas las variables de entorno cargadas
-docker exec dinkit_api env | grep -E "(DB_|MONGO_|REDIS_|JWT_)"
+docker exec dinkit_api env | Select-String -Pattern "(DB_|MONGO_|REDIS_|JWT_)"
 
 # Verificar que Yarn funcione dentro del contenedor
 docker exec dinkit_api yarn --version

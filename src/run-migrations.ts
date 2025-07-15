@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import 'dotenv/config';
 import dataSource from './shared/infrastructure/config/typeorm.config';
 

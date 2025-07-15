@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { Product } from 'src/product/infrastructure/database/entities/product.entity';
-import { Category } from 'src/product/infrastructure/database/entities/category.entity';
-import { SubCategory } from 'src/product/infrastructure/database/entities/subcategory.entity';
+import { Product } from '../../../../product/infrastructure/database/entities/product.entity';
+import { Category } from '../../../../product/infrastructure/database/entities/category.entity';
+import { SubCategory } from '../../../../product/infrastructure/database/entities/subcategory.entity';
 import { OrderDetailHistory } from './order-detail-history.entity';
 
 @Entity('ordersDetails')
@@ -80,15 +80,15 @@ export class OrderDetail {
   @JoinColumn({ name: 'fk_ordersId' })
   order: Order;
 
-  @ManyToOne(() => Product, (product) => product.orderDetails)
+  @ManyToOne(() => Product, 'orderDetails')
   @JoinColumn({ name: 'fk_productId' })
   product: Product;
 
-  @ManyToOne(() => Category, (category) => category.orderDetails)
+  @ManyToOne(() => Category, 'orderDetails')
   @JoinColumn({ name: 'fk_categoryId' })
   productCategory: Category;
 
-  @ManyToOne(() => SubCategory, (subCategory) => subCategory.orderDetails)
+  @ManyToOne(() => SubCategory, 'orderDetails')
   @JoinColumn({ name: 'fk_subCategoryId' })
   subcategory: SubCategory;
 

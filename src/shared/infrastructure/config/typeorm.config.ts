@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import 'dotenv/config';
 
 import { ConfigService } from '@nestjs/config';

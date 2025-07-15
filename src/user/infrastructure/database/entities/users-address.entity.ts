@@ -8,9 +8,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Country } from 'src/location/infrastructure/database/entities/country.entity';
-import { State } from 'src/location/infrastructure/database/entities/state.entity';
-import { City } from 'src/location/infrastructure/database/entities/city.entity';
+import { Country } from '../../../../location/infrastructure/database/entities/country.entity';
+import { State } from '../../../../location/infrastructure/database/entities/state.entity';
+import { City } from '../../../../location/infrastructure/database/entities/city.entity';
 
 @Entity('usersAddresses')
 export class UsersAddress {
@@ -60,15 +60,15 @@ export class UsersAddress {
   @JoinColumn({ name: 'fk_usersId' })
   user: User;
 
-  @ManyToOne(() => Country, (country) => country.usersAddresses)
+  @ManyToOne(() => Country, 'usersAddresses')
   @JoinColumn({ name: 'fk_countriesId' })
   country: Country;
 
-  @ManyToOne(() => State, (state) => state.usersAddresses)
+  @ManyToOne(() => State, 'usersAddresses')
   @JoinColumn({ name: 'fk_statesId' })
   state: State;
 
-  @ManyToOne(() => City, (city) => city.usersAddresses)
+  @ManyToOne(() => City, 'usersAddresses')
   @JoinColumn({ name: 'fk_citiesId' })
   city: City;
 }

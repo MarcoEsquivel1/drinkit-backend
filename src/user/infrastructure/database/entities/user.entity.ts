@@ -1,11 +1,5 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import {
-  IsEmail,
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsDateString } from 'class-validator';
 import { Expose } from 'class-transformer';
 import { BaseCustomerEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { Role } from './role.entity';
@@ -18,25 +12,25 @@ import { UsersTransaction } from './users-transaction.entity';
 
 @Entity('users')
 export class User extends BaseCustomerEntity {
-  @Column({ nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   @IsOptional()
   @IsDateString()
   @Expose()
   birthdate?: Date;
 
-  @Column({ nullable: true, name: 'facebook_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'facebook_id' })
   @IsOptional()
   @IsString()
   @Expose()
   facebookId?: string;
 
-  @Column({ nullable: true, name: 'google_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'google_id' })
   @IsOptional()
   @IsString()
   @Expose()
   googleId?: string;
 
-  @Column({ nullable: true, name: 'apple_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'apple_id' })
   @IsOptional()
   @IsString()
   @Expose()
@@ -45,12 +39,12 @@ export class User extends BaseCustomerEntity {
   @Column({ type: 'integer', default: 3, name: 'fk_role_id' })
   roleId?: number;
 
-  @Column({ default: false, name: 'is_logged_in' })
+  @Column({ type: 'boolean', default: false, name: 'is_logged_in' })
   @IsBoolean()
   @Expose()
   isLoggedIn?: boolean;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   @IsBoolean()
   @Expose()
   verify?: boolean;
