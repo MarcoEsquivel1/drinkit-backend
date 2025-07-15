@@ -1,0 +1,163 @@
+# ================================
+# DINKIT BACKEND - VARIABLES DE ENTORNO
+# ================================
+# Copiar este archivo como .env y modificar los valores según sea necesario
+
+# ================================
+# APLICACIÓN (USADAS ACTUALMENTE)
+# ================================
+NODE_ENV=development
+PORT=3000
+
+# ================================
+# BASE DE DATOS POSTGRESQL MULTI-ENTORNO (USADAS ACTUALMENTE)
+# ================================
+
+# Variables para producción (NODE_ENV=production)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=dinkit_user
+DB_PASSWORD=secret
+DB_NAME=dinkit_db
+
+# Variables para desarrollo (NODE_ENV=development)
+# Si no se especifican, usa las variables DB_* como fallback
+DEV_DB_HOST=localhost
+DEV_DB_PORT=5432
+DEV_DB_USERNAME=dinkit_user
+DEV_DB_PASSWORD=secret
+DEV_DB_NAME=dinkit_dev_db
+
+# Variables para testing (NODE_ENV=test)
+TEST_DB_HOST=localhost
+TEST_DB_PORT=5432
+TEST_DB_USERNAME=dinkit_test_user
+TEST_DB_PASSWORD=secret
+TEST_DB_NAME=dinkit_test_db
+
+# Variables para TypeORM CLI y migraciones
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USERNAME=dinkit_user
+POSTGRES_PASSWORD=secret
+POSTGRES_NAME=dinkit_db
+POSTGRES_SCHEMA=public
+POSTGRES_USE_SSL=false
+
+# ================================
+# MONGODB (AUDITORÍA Y LOGS - USADAS ACTUALMENTE)
+# ================================
+MONGO_HOST=localhost
+MONGO_PORT=27017
+MONGO_USERNAME=dinkit_audit_user
+MONGO_PASSWORD=secret
+MONGO_DATABASE=dinkit_audit
+
+# ================================
+# REDIS (CACHE Y SESIONES - USADAS ACTUALMENTE)
+# ================================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=secret
+REDIS_DATABASES=0
+
+# ================================
+# AUTENTICACIÓN JWT (USADAS ACTUALMENTE)
+# ================================
+JWT_SECRET=dinkitjwt
+
+# ================================
+# LOGGING Y MONITOREO (USADAS ACTUALMENTE)
+# ================================
+LOGTAIL_KEY=your-logtail-key
+
+# ================================
+# VARIABLES NO UTILIZADAS AÚN (COMENTADAS)
+# ================================
+
+# # Variables de aplicación adicionales
+# APP_HOST=localhost
+# APP_URL=http://localhost:3000
+
+# # Variables adicionales de MongoDB
+# MONGO_AUTH_SOURCE=admin
+
+# # Variables adicionales de Redis
+# REDIS_FAMILY=4
+# REDIS_KEEPALIVE=30000
+
+# # JWT adicional
+# JWT_EXPIRES_IN=24h
+# JWT_REFRESH_SECRET=your-refresh-secret-key-change-this-in-production-minimum-32-chars
+# JWT_REFRESH_EXPIRES_IN=7d
+
+# # API KEYS Y SEGURIDAD
+# API_KEY_ADMIN=admin-api-key-change-this-in-production
+# API_KEY_SECURE=secure-api-key-change-this-in-production
+# ENCRYPTION_SECRET=your-encryption-secret-key-change-this-in-production-minimum-32-chars
+
+# # RATE LIMITING
+# THROTTLE_TTL=60
+# THROTTLE_LIMIT=20
+
+# # CONFIGURACIÓN DE EMAIL
+# MAIL_HOST=smtp.gmail.com
+# MAIL_PORT=587
+# MAIL_SECURE=false
+# MAIL_USER=your-email@gmail.com
+# MAIL_PASS=your-app-password
+# MAIL_FROM_NAME=Dinkit
+# MAIL_FROM_EMAIL=noreply@dinkit.com
+
+# # SENDGRID (Alternativo para email)
+# SENDGRID_API_KEY=your-sendgrid-api-key
+# SENDGRID_FROM_EMAIL=noreply@dinkit.com
+# SENDGRID_FROM_NAME=Dinkit
+
+# # TWILIO (SMS)
+# TWILIO_ACCOUNT_SID=your-twilio-account-sid
+# TWILIO_AUTH_TOKEN=your-twilio-auth-token
+# TWILIO_PHONE_NUMBER=+1234567890
+
+# # IMAGEKIT (Gestión de Imágenes)
+# IMAGEKIT_PUBLIC_KEY=your-imagekit-public-key
+# IMAGEKIT_PRIVATE_KEY=your-imagekit-private-key
+# IMAGEKIT_URL_ENDPOINT=https://ik.imageio.io/your-imagekit-id/
+
+# # SUBIDA DE ARCHIVOS
+# MAX_FILE_SIZE=10MB
+# UPLOAD_PATH=./uploads
+# ALLOWED_IMAGE_TYPES=jpeg,jpg,png,webp
+# ALLOWED_DOCUMENT_TYPES=pdf,doc,docx
+
+# # LOGGING Y MONITOREO ADICIONAL
+# LOG_LEVEL=debug
+# LOG_FILE_PATH=./logs
+
+# # BULL QUEUE (Trabajos en Background)
+# QUEUE_REDIS_HOST=localhost
+# QUEUE_REDIS_PORT=6379
+# QUEUE_REDIS_PASSWORD=secret
+
+# # PAGOS (Stripe/PayPal)
+# STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+# STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+# STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# PAYPAL_CLIENT_ID=your-paypal-client-id
+# PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+# PAYPAL_MODE=sandbox
+
+# # CONFIGURACIÓN DE CORS
+# CORS_ORIGIN=http://localhost:3001,http://localhost:3000
+# CORS_CREDENTIALS=true
+
+# # CONFIGURACIONES ADICIONALES
+# SESSION_SECRET=your-session-secret-change-this-in-production
+# BCRYPT_SALT_ROUNDS=12
+# PASSWORD_RESET_TOKEN_EXPIRY=3600000
+
+# # CONFIGURACIÓN DE DESARROLLO
+# SWAGGER_ENABLED=true
+# SWAGGER_PATH=api/docs
+# DEBUG_MODE=true 
