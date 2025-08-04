@@ -9,31 +9,35 @@ import {
 import { UserGender } from '../enums';
 
 abstract class BaseEntity {
-  @Column({ unique: true, comment: 'email of the user' })
+  @Column({ type: 'varchar', unique: true, comment: 'email of the user' })
   email!: string;
 
-  @Column({ comment: 'password of the user' })
+  @Column({ type: 'varchar', comment: 'password of the user' })
   password!: string;
 
-  @Column({ nullable: false, comment: 'name of the user' })
+  @Column({ type: 'varchar', nullable: false, comment: 'name of the user' })
   name!: string;
 
-  @Column({ nullable: false, comment: 'surname of the user' })
+  @Column({ type: 'varchar', nullable: false, comment: 'surname of the user' })
   surname!: string;
 
-  @Column({ default: true, comment: 'Flag indicating if the user is active' })
+  @Column({
+    type: 'boolean',
+    default: true,
+    comment: 'Flag indicating if the user is active',
+  })
   enabled?: boolean;
 
-  @Column({ nullable: true, comment: 'phone of the user' })
+  @Column({ type: 'varchar', nullable: true, comment: 'phone of the user' })
   phone?: string;
 
-  @Column({ nullable: true, comment: 'photo of the user' })
+  @Column({ type: 'varchar', nullable: true, comment: 'photo of the user' })
   photo?: string;
 
   @Column({
     type: 'enum',
     enum: UserGender,
-    default: UserGender.O,
+    default: UserGender.OTHER,
     comment: 'gender of the user',
   })
   gender: UserGender;
@@ -48,6 +52,7 @@ abstract class BaseEntity {
   createdAt: Date;
 
   @Column({
+    type: 'varchar',
     name: 'created_by',
     update: false,
     comment: 'Info of the creator.',
@@ -64,6 +69,7 @@ abstract class BaseEntity {
   updatedAt?: Date;
 
   @Column({
+    type: 'varchar',
     name: 'updated_by',
     nullable: true,
     insert: false,
@@ -84,28 +90,32 @@ export abstract class BaseCustomerEntity {
   @PrimaryGeneratedColumn('uuid', { comment: 'Id of the entity.' })
   id: string;
 
-  @Column({ unique: true, comment: 'email of the user' })
+  @Column({ type: 'varchar', unique: true, comment: 'email of the user' })
   email!: string;
 
-  @Column({ comment: 'password of the user' })
+  @Column({ type: 'varchar', comment: 'password of the user' })
   password!: string;
 
-  @Column({ nullable: false, comment: 'name of the user' })
+  @Column({ type: 'varchar', nullable: false, comment: 'name of the user' })
   name!: string;
 
-  @Column({ default: true, comment: 'Flag indicating if the user is active' })
+  @Column({
+    type: 'boolean',
+    default: true,
+    comment: 'Flag indicating if the user is active',
+  })
   enabled?: boolean;
 
-  @Column({ nullable: true, comment: 'phone of the user' })
+  @Column({ type: 'varchar', nullable: true, comment: 'phone of the user' })
   phone?: string;
 
-  @Column({ nullable: true, comment: 'photo of the user' })
+  @Column({ type: 'varchar', nullable: true, comment: 'photo of the user' })
   photo?: string;
 
   @Column({
     type: 'enum',
     enum: UserGender,
-    default: UserGender.O,
+    default: UserGender.OTHER,
     comment: 'gender of the user',
   })
   gender: UserGender;
@@ -120,6 +130,7 @@ export abstract class BaseCustomerEntity {
   createdAt: Date;
 
   @Column({
+    type: 'varchar',
     name: 'created_by',
     update: false,
     comment: 'Info of the creator.',
@@ -136,6 +147,7 @@ export abstract class BaseCustomerEntity {
   updatedAt?: Date;
 
   @Column({
+    type: 'varchar',
     name: 'updated_by',
     nullable: true,
     insert: false,
@@ -152,6 +164,7 @@ export abstract class BaseCustomerEntity {
   deletedAt?: Date;
 
   @Column({
+    type: 'varchar',
     name: 'deleted_by',
     nullable: true,
     insert: false,
@@ -170,6 +183,7 @@ export abstract class BaseUserWithIdEntity extends BaseEntity {
   id: number;
 
   @Column({
+    type: 'varchar',
     name: 'deleted_by',
     nullable: true,
     insert: false,
@@ -183,6 +197,7 @@ export abstract class BaseUserWithUuidEntity extends BaseEntity {
   id: string;
 
   @Column({
+    type: 'varchar',
     name: 'deleted_by',
     nullable: true,
     insert: false,

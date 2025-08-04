@@ -7,7 +7,6 @@ import {
   OrderDetailHistory,
   PurchaseStatus,
   Cart,
-  CartItem,
 } from './infrastructure/database/entities';
 import { OrderController } from './interfaces/order.controller';
 import { OrderService } from './use-cases/order.service';
@@ -23,7 +22,6 @@ import { ProductModule } from '../product/product.module';
       OrderDetailHistory,
       PurchaseStatus,
       Cart,
-      CartItem,
     ]),
     UserModule,
     ProductModule,

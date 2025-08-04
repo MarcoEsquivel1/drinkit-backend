@@ -1,5 +1,10 @@
-export const hasProperty = (obj: any, key: string): boolean => {
-  return obj != null && Object.prototype.hasOwnProperty.call(obj, key);
+export const hasProperty = (
+  obj: Record<string, unknown>,
+  key: string,
+): boolean => {
+  return (obj !== null &&
+    obj !== undefined &&
+    Object.prototype.hasOwnProperty.call(obj, key)) as boolean;
 };
 
 export const makeChunksFromArray = (
@@ -58,7 +63,10 @@ export const sortBy = <T>(
   });
 };
 
-export const pickProperties = <T, K extends keyof T>(
+export const pickProperties = <
+  T extends Record<string, unknown>,
+  K extends keyof T,
+>(
   obj: T,
   keys: K[],
 ): Pick<T, K> => {
@@ -84,13 +92,13 @@ export const omitProperties = <T, K extends keyof T>(
 
 export const deepClone = <T>(obj: T): T => {
   if (obj === null || typeof obj !== 'object') return obj;
-  if (obj instanceof Date) return new Date(obj.getTime()) as any;
-  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as any;
+  if (obj instanceof Date) return new Date(obj.getTime()) as T;
+  if (Array.isArray(obj)) return obj.map(deepClone) as T;
   if (typeof obj === 'object') {
-    const clonedObj = {} as any;
+    const clonedObj = {} as T;
     for (const key in obj) {
-      if (hasProperty(obj, key)) {
-        clonedObj[key] = deepClone(obj[key]);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        clonedObj[key as keyof T] = deepClone(obj[key as keyof T]);
       }
     }
     return clonedObj;
@@ -98,7 +106,7 @@ export const deepClone = <T>(obj: T): T => {
   return obj;
 };
 
-export const isEmpty = (value: any): boolean => {
+export const isEmpty = (value: unknown): boolean => {
   if (value == null) return true;
   if (typeof value === 'string') return value.trim().length === 0;
   if (Array.isArray(value)) return value.length === 0;

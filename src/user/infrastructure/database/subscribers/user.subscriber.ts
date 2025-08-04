@@ -34,17 +34,16 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
   }
 
   beforeUpdate(event: UpdateEvent<User>): void {
+    const entity = event.entity as User;
     if (
-      event.entity &&
+      entity &&
       (event.updatedColumns.find((col) => col.propertyName === 'password') ||
-        (event.entity.password && !event.entity.password.startsWith('$2b$')))
+        (entity.password && !entity.password?.startsWith('$2b$')))
     ) {
-      event.entity.password = this.encryptionService.encryptPasswd(
-        event.entity.password,
-      );
+      entity.password = this.encryptionService.encryptPasswd(entity.password);
     }
-    if (event.entity) {
-      this.logger.verbose(`BEFORE USER ENTITY UPDATED: ${event.entity.email}`);
+    if (entity) {
+      this.logger.verbose(`BEFORE USER ENTITY UPDATED: ${entity.email}`);
     }
   }
 }

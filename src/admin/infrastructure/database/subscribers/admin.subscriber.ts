@@ -37,11 +37,15 @@ export class AdminSubscriber implements EntitySubscriberInterface<Admin> {
     if (
       event.entity &&
       (event.updatedColumns.find((col) => col.propertyName === 'password') ||
-        (event.entity.password && !event.entity.password.startsWith('$2b$')))
+        (event.entity.password &&
+          typeof event.entity.password === 'string' &&
+          !event.entity.password.startsWith('$2b$')))
     ) {
-      event.entity.password = this.encryptionService.encryptPasswd(
-        event.entity.password,
-      );
+      if (typeof event.entity.password === 'string') {
+        event.entity.password = this.encryptionService.encryptPasswd(
+          event.entity.password,
+        );
+      }
     }
     if (event.entity) {
       this.logger.verbose(`BEFORE ADMIN ENTITY UPDATED: ${event.entity.email}`);

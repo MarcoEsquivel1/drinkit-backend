@@ -1,7 +1,8 @@
 export enum UserGender {
-  M = 'M',
-  F = 'F',
-  O = 'O',
+  MALE = 'M',
+  FEMALE = 'F',
+  OTHER = 'O',
+  PREFER_NOT_TO_SAY = 'N',
 }
 
 export enum OrderStatus {

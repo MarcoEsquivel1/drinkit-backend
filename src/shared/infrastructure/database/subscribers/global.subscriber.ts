@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import {
@@ -24,17 +28,21 @@ export class GlobalSubscriber implements EntitySubscriberInterface<any> {
   }
 
   private optimizeRecord(record: any): any {
-    const { older, newest, updatedColumns } = record;
+    const { older, newest, updatedColumns } = record as {
+      older: Record<string, any>;
+      newest: Record<string, any>;
+      updatedColumns: string[];
+    };
 
     const optimizedOlder: Record<string, any> = {};
     const optimizedNewest: Record<string, any> = {};
 
     updatedColumns?.forEach((column) => {
-      if (older.hasOwnProperty(column)) {
-        optimizedOlder[column] = older[column];
+      if (Object.prototype.hasOwnProperty.call(older, column)) {
+        optimizedOlder[column] = older[column] as unknown;
       }
-      if (newest.hasOwnProperty(column)) {
-        optimizedNewest[column] = newest[column];
+      if (Object.prototype.hasOwnProperty.call(newest, column)) {
+        optimizedNewest[column] = newest[column] as unknown;
       }
     });
 
@@ -46,7 +54,7 @@ export class GlobalSubscriber implements EntitySubscriberInterface<any> {
     };
   }
 
-  private createAuditLog(action: string, event: any): void {
+  private async createAuditLog(action: string, event: any): Promise<void> {
     try {
       const date = new Date();
       let auditLogData: Partial<AuditLogDto> = {
@@ -70,36 +78,36 @@ export class GlobalSubscriber implements EntitySubscriberInterface<any> {
         auditLogData = this.optimizeRecord(auditLogData);
       }
 
-      this.auditLogService.create(auditLogData);
+      await this.auditLogService.create(auditLogData);
     } catch (error) {
       this.logger.error(`Error creating audit log: ${error.message}`);
     }
   }
 
-  afterInsert(event: InsertEvent<any>): void {
+  async afterInsert(event: InsertEvent<any>): Promise<void> {
     this.logger.verbose(`AFTER ENTITY INSERTED: ${event.metadata.tableName}`);
-    this.createAuditLog('insert', event);
+    await this.createAuditLog('insert', event);
   }
 
-  afterUpdate(event: UpdateEvent<any>): void {
+  async afterUpdate(event: UpdateEvent<any>): Promise<void> {
     this.logger.verbose(`AFTER ENTITY UPDATED: ${event.metadata.tableName}`);
-    this.createAuditLog('update', event);
+    await this.createAuditLog('update', event);
   }
 
-  afterRemove(event: RemoveEvent<any>): void {
+  async afterRemove(event: RemoveEvent<any>): Promise<void> {
     this.logger.verbose(`AFTER ENTITY REMOVED: ${event.metadata.tableName}`);
-    this.createAuditLog('remove', event);
+    await this.createAuditLog('remove', event);
   }
 
-  afterSoftRemove(event: SoftRemoveEvent<any>): void {
+  async afterSoftRemove(event: SoftRemoveEvent<any>): Promise<void> {
     this.logger.verbose(
       `AFTER ENTITY SOFT REMOVED: ${event.metadata.tableName}`,
     );
-    this.createAuditLog('soft-remove', event);
+    await this.createAuditLog('soft-remove', event);
   }
 
-  afterRecover(event: RecoverEvent<any>): void {
+  async afterRecover(event: RecoverEvent<any>): Promise<void> {
     this.logger.verbose(`AFTER ENTITY RECOVERED: ${event.metadata.tableName}`);
-    this.createAuditLog('recover', event);
+    await this.createAuditLog('recover', event);
   }
 }

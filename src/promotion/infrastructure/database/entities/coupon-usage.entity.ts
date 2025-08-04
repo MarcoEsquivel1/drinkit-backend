@@ -9,7 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Coupon } from './coupon.entity';
-import { User } from 'src/user/infrastructure/database/entities/user.entity';
+import { User } from '../../../../user/infrastructure/database/entities/user.entity';
 
 @Entity('couponsUsages')
 export class CouponUsage {
@@ -44,7 +44,7 @@ export class CouponUsage {
   @JoinColumn({ name: 'fk_couponsId' })
   coupon: Coupon;
 
-  @ManyToOne(() => User, (user) => user.couponUsages)
+  @ManyToOne(() => User, 'couponUsages')
   @JoinColumn({ name: 'fk_usersId' })
   user: User;
 }

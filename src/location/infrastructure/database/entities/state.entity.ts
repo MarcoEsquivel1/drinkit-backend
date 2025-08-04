@@ -11,6 +11,8 @@ import { Expose, Transform } from 'class-transformer';
 import { AuditedWithIdEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { Country } from './country.entity';
 import { City } from './city.entity';
+import { UsersAddress } from '../../../../user/infrastructure/database/entities/users-address.entity';
+import { UsersRequest } from '../../../../user/infrastructure/database/entities/users-request.entity';
 
 @Entity('states')
 export class State extends AuditedWithIdEntity {
@@ -19,7 +21,9 @@ export class State extends AuditedWithIdEntity {
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   name: string;
 
@@ -42,6 +46,6 @@ export class State extends AuditedWithIdEntity {
   @ApiProperty({ description: 'Ciudades del estado', type: () => [City] })
   cities: City[];
 
-  usersAddresses: any[];
-  usersRequests: any[];
+  usersAddresses: UsersAddress[];
+  usersRequests: UsersRequest[];
 }

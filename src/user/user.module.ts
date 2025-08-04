@@ -12,6 +12,7 @@ import {
 } from './infrastructure/database/entities';
 import { UserController } from './interfaces/user.controller';
 import { UserService } from './use-cases/user.service';
+import { UserAuthModule } from './user-auth.module';
 import { LocationModule } from '../location/location.module';
 
 @Module({
@@ -26,10 +27,11 @@ import { LocationModule } from '../location/location.module';
       UsersRequest,
       UsersTransaction,
     ]),
+    UserAuthModule,
     LocationModule,
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [TypeOrmModule, UserService],
+  exports: [TypeOrmModule, UserService, UserAuthModule],
 })
 export class UserModule {}

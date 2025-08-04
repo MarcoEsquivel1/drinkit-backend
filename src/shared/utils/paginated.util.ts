@@ -54,7 +54,7 @@ export class PaginatedDto {
   count: number;
 }
 
-export class PaginatedResponseDto<T> {
+export class PaginatedDataDto<T> {
   @ApiProperty({ description: 'Pagination info' })
   @Expose()
   pagination: PaginatedDto;
@@ -74,7 +74,7 @@ export const buildPaginatedResponse = <T>(
   count: number,
   page: number,
   size: number,
-): PaginatedResponseDto<T> => {
+): PaginatedDataDto<T> => {
   return {
     data,
     pagination: Paginated.create({ page, size, count }),

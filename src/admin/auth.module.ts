@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -30,6 +30,7 @@ import {
 
 // Services
 import { AuthService } from './use-cases/auth/auth.service';
+import { EncryptionService } from '../shared/infrastructure/services/encryption.service';
 
 // Controllers
 import { AuthController } from './interfaces/auth/auth.controller';
@@ -37,13 +38,14 @@ import { AuthController } from './interfaces/auth/auth.controller';
 // Shared
 import { SharedModule } from '../shared/shared.module';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([Admin, User]),
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'credentials' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'default-secret',
         signOptions: { expiresIn: '24h' },
       }),
@@ -70,6 +72,7 @@ import { SharedModule } from '../shared/shared.module';
 
     // Services
     AuthService,
+    EncryptionService,
   ],
   controllers: [AuthController],
   exports: [

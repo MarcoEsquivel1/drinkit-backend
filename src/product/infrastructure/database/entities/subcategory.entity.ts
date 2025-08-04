@@ -11,6 +11,8 @@ import {
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Product } from './product.entity';
+import { OrderDetail } from '../../../../order/infrastructure/database/entities/order-detail.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('subCategory')
 export class SubCategory {
@@ -23,17 +25,11 @@ export class SubCategory {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ type: 'text', nullable: false })
-  description: string;
-
   @Column({ type: 'varchar', nullable: true })
   imageSubCategory: string;
 
   @Column({ type: 'boolean', nullable: false, default: true })
   activeSubCategory: boolean;
-
-  @Column({ type: 'date', nullable: true })
-  deactivatedAt: Date;
 
   @Column({ type: 'int', nullable: false, default: 0 })
   discount: number;
@@ -57,5 +53,10 @@ export class SubCategory {
   @OneToMany(() => Product, (product) => product.subcategory)
   products: Product[];
 
-  orderDetails: any[];
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.subcategory)
+  @ApiProperty({
+    description: 'Detalles de la orden',
+    type: () => [OrderDetail],
+  })
+  orderDetails: OrderDetail[];
 }

@@ -1,6 +1,6 @@
 import { generateSlug } from './text.util';
 
-export const filename = (data: any): string => {
+export const filename = (data: { day?: string; name?: string }): string => {
   const now = Date.now();
   const cleanDate = data?.day?.replace(/\//g, '') || '';
   const cleanName = data?.name ? generateSlug(data.name) : '';

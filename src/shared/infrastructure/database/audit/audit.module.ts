@@ -19,12 +19,12 @@ import { AuditLogService } from './services/audit-log.service';
       },
     }),
     MongooseModule.forRootAsync({
-      useFactory: async (config: ConfigService) => {
-        const username = config.get('MONGO_USERNAME');
-        const password = config.get('MONGO_PASSWORD');
-        const database = config.get('MONGO_DATABASE');
-        const host = config.get('MONGO_HOST');
-        const port = config.get('MONGO_PORT');
+      useFactory: (config: ConfigService) => {
+        const username = config.get('MONGO_USERNAME') as string;
+        const password = config.get('MONGO_PASSWORD') as string;
+        const database = config.get('MONGO_DATABASE') as string;
+        const host = config.get('MONGO_HOST') as string;
+        const port = config.get('MONGO_PORT') as number;
         return {
           uri: `mongodb://${username}:${password}@${host}:${port}`,
           dbName: database,

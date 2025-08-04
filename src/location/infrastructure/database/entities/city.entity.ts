@@ -12,6 +12,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
 import { AuditedWithIdEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { State } from './state.entity';
+import { UsersAddress } from '../../../../user/infrastructure/database/entities/users-address.entity';
+import { UsersRequest } from '../../../../user/infrastructure/database/entities/users-request.entity';
 
 @Entity('cities')
 export class City extends AuditedWithIdEntity {
@@ -20,7 +22,9 @@ export class City extends AuditedWithIdEntity {
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   name: string;
 
@@ -56,6 +60,6 @@ export class City extends AuditedWithIdEntity {
   })
   state: State;
 
-  usersAddresses: any[];
-  usersRequests: any[];
+  usersAddresses: UsersAddress[];
+  usersRequests: UsersRequest[];
 }

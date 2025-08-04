@@ -1,11 +1,23 @@
-import { IsInt, IsNotEmpty, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsInt, IsNotEmpty, IsPositive, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCartDto {
-  @IsInt()
+  @ApiProperty({ description: 'ID del usuario propietario del carrito' })
+  @IsString()
   @IsNotEmpty()
-  fk_userId: number;
+  userId: string;
 
-  @IsOptional()
-  @IsDateString()
-  deactivatedAt?: Date;
+  @ApiProperty({ description: 'ID del producto a agregar al carrito' })
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  productId: number;
+
+  @ApiProperty({ description: 'Cantidad del producto', minimum: 1 })
+  @IsInt()
+  @IsPositive()
+  @Min(1)
+  @Type(() => Number)
+  quantity: number;
 }

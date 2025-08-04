@@ -15,6 +15,7 @@ import { Expose, Transform } from 'class-transformer';
 import { ParanoidWithIdEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { Product } from './product.entity';
 import { SubCategory } from './subcategory.entity';
+import { OrderDetail } from '../../../../order/infrastructure/database/entities/order-detail.entity';
 
 @Entity('categories')
 export class Category extends ParanoidWithIdEntity {
@@ -23,18 +24,11 @@ export class Category extends ParanoidWithIdEntity {
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   name: string;
-
-  @Column({ type: 'text', nullable: false })
-  @ApiProperty({ description: 'Descripción de la categoría' })
-  @IsString()
-  @MinLength(5)
-  @MaxLength(1000)
-  @Transform(({ value }) => value?.trim())
-  @Expose()
-  description: string;
 
   @Column({ type: 'varchar', nullable: true })
   @ApiPropertyOptional({ description: 'URL de la imagen de la categoría' })
@@ -52,14 +46,6 @@ export class Category extends ParanoidWithIdEntity {
   @IsBoolean()
   @Expose()
   active: boolean;
-
-  @Column({ type: 'timestamptz', nullable: true, name: 'deactivated_at' })
-  @ApiPropertyOptional({
-    description: 'Fecha de desactivación de la categoría',
-  })
-  @IsOptional()
-  @Expose()
-  deactivatedAt?: Date;
 
   @Column({ type: 'int', nullable: false, default: 0 })
   @ApiProperty({
@@ -97,5 +83,10 @@ export class Category extends ParanoidWithIdEntity {
   })
   subcategories: SubCategory[];
 
-  orderDetails: any[];
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.productCategory)
+  @ApiProperty({
+    description: 'Detalles de la orden',
+    type: () => [OrderDetail],
+  })
+  orderDetails: OrderDetail[];
 }

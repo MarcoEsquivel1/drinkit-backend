@@ -2,7 +2,23 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { PaginatedDto } from '../utils/paginated.util';
 
-export class ResponseDto<T = any> {
+// DTO base para respuestas simples (sin paginación)
+export class SimpleResponseDto<T = any> {
+  @ApiProperty({ description: 'Indica si la operación fue exitosa' })
+  @Expose()
+  success: boolean;
+
+  @ApiProperty({ description: 'Contenido de la respuesta', required: false })
+  @Expose()
+  result?: T;
+
+  @ApiProperty({ description: 'Mensaje de la respuesta' })
+  @Expose()
+  message: string;
+}
+
+// DTO para respuestas con paginación
+export class PaginatedResponseDto<T = any> {
   @ApiProperty({ description: 'Indica si la operación fue exitosa' })
   @Expose()
   success: boolean;
@@ -15,6 +31,14 @@ export class ResponseDto<T = any> {
   @Expose()
   message: string;
 
+  @ApiProperty({ description: 'Datos de la paginación' })
+  @Expose()
+  @Type(() => PaginatedDto)
+  pagination: PaginatedDto;
+}
+
+// DTO original para mantener compatibilidad
+export class ResponseDto<T = any> extends SimpleResponseDto<T> {
   @ApiProperty({ description: 'Datos de la paginación', required: false })
   @Expose()
   @Type(() => PaginatedDto)
@@ -33,7 +57,10 @@ export class InnerResponseDto<T = any> {
 }
 
 export class ResponseBuilder {
-  static success<T>(data: T, message = 'Operación exitosa'): ResponseDto<T> {
+  static success<T>(
+    data: T,
+    message = 'Operación exitosa',
+  ): SimpleResponseDto<T> {
     return {
       success: true,
       result: data,
@@ -45,7 +72,7 @@ export class ResponseBuilder {
     data: T,
     pagination: PaginatedDto,
     message = 'Operación exitosa',
-  ): ResponseDto<T> {
+  ): PaginatedResponseDto<T> {
     return {
       success: true,
       result: data,
@@ -54,7 +81,7 @@ export class ResponseBuilder {
     };
   }
 
-  static error(message = 'Error en la operación'): ResponseDto {
+  static error(message = 'Error en la operación'): SimpleResponseDto {
     return {
       success: false,
       message,
@@ -68,7 +95,7 @@ export class ResponseBuilder {
   ): InnerResponseDto<T> {
     return {
       status,
-      result: this.success(data, message),
+      result: this.success(data, message) as ResponseDto<T>,
     };
   }
 
@@ -80,7 +107,11 @@ export class ResponseBuilder {
   ): InnerResponseDto<T> {
     return {
       status,
-      result: this.successWithPagination(data, pagination, message),
+      result: this.successWithPagination(
+        data,
+        pagination,
+        message,
+      ) as ResponseDto<T>,
     };
   }
 
@@ -90,7 +121,7 @@ export class ResponseBuilder {
   ): InnerResponseDto {
     return {
       status,
-      result: this.error(message),
+      result: this.error(message) as ResponseDto,
     };
   }
 }

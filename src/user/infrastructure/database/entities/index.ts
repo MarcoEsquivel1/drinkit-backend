@@ -1,3 +1,5 @@
+export { AppleFallback } from './apple-fallback.entity';
+export { Blacklist } from './blacklist.entity';
 export { User } from './user.entity';
 export { Role } from './role.entity';
 export { UsersAddress } from './users-address.entity';

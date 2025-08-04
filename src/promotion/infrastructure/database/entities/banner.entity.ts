@@ -63,7 +63,9 @@ export class Banner extends ParanoidWithIdEntity {
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   title?: string;
 
@@ -72,7 +74,9 @@ export class Banner extends ParanoidWithIdEntity {
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   subtitle?: string;
 
@@ -84,7 +88,9 @@ export class Banner extends ParanoidWithIdEntity {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   cta?: string;
 

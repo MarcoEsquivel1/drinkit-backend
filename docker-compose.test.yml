@@ -1,0 +1,85 @@
+version: '3.8'
+
+volumes:
+  postgres_test_data:
+  mongo_test_data:
+  redis_test_data:
+
+services:
+  postgres:
+    container_name: dinkit_pg_test
+    image: postgres:15
+    ports:
+      - '${TEST_DB_PORT:-5433}:5432'
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${TEST_DB_NAME}
+      POSTGRES_USER: ${TEST_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dinkit_test_user -d dinkit_test_db']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mongo:
+    container_name: dinkit_mongo_test
+    image: mongo:7
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo_test_data:/data/db
+      - mongo_test_data:/data/configdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    container_name: dinkit_redis_test
+    image: redis:7-alpine
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_test_data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DATABASES: ${REDIS_DATABASES}
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api:
+    container_name: dinkit_api_test
+    build:
+      context: .
+      target: development
+    command: yarn test
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=test
+      - TEST_DB_HOST=postgres
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

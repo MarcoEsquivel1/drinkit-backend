@@ -1,4 +1,3 @@
-import { DataSource } from 'typeorm';
 import typeOrmConfig from '../../config/typeorm.config';
 
 import RolesSeeder from './01-roles.seed';
@@ -31,7 +30,10 @@ async function runSeeders() {
         await seeder.run(dataSource);
         console.log(`✅ ${seederName} completado`);
       } catch (error) {
-        console.error(`❌ Error en ${seederName}:`, error.message);
+        console.error(
+          `❌ Error en ${seederName}:`,
+          error instanceof Error ? error.message : String(error),
+        );
         throw error;
       }
     }
@@ -47,7 +49,10 @@ async function runSeeders() {
 }
 
 if (require.main === module) {
-  runSeeders();
+  runSeeders().catch((error) => {
+    console.error('Error ejecutando seeders:', error);
+    process.exit(1);
+  });
 }
 
 export default runSeeders;

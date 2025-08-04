@@ -4,7 +4,7 @@ export const wait = (ms: number): Promise<void> => {
 
 export const fail = (error: string): Promise<never> => {
   return new Promise((_resolve, reject) =>
-    setTimeout(() => reject(error), 1500),
+    setTimeout(() => reject(new Error(error)), 1500),
   );
 };
 
@@ -73,14 +73,14 @@ export const withTimeout = async <T>(
 export const promiseAllSettled = async <T>(
   promises: Promise<T>[],
 ): Promise<
-  Array<{ status: 'fulfilled' | 'rejected'; value?: T; reason?: any }>
+  Array<{ status: 'fulfilled' | 'rejected'; value?: T; reason?: Error }>
 > => {
   return Promise.allSettled(promises).then((results) =>
     results.map((result) => {
       if (result.status === 'fulfilled') {
         return { status: 'fulfilled', value: result.value };
       } else {
-        return { status: 'rejected', reason: result.reason };
+        return { status: 'rejected', reason: result.reason as Error };
       }
     }),
   );

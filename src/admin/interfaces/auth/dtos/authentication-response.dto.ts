@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { ResponseDto } from '../../../../shared/utils';
+import { SimpleResponseDto } from '../../../../shared/dtos/response.dto';
 
 class RoleDto {
   @ApiProperty({ description: 'ID' })
@@ -43,7 +43,7 @@ export class AuthenticationDataDto {
   role: RoleDto;
 }
 
-export class AuthenticationResponseDto extends ResponseDto<AuthenticationDataDto> {
+export class AuthenticationResponseDto extends SimpleResponseDto<AuthenticationDataDto> {
   @ApiProperty({ type: AuthenticationDataDto })
   @Type(() => AuthenticationDataDto)
   @Expose()

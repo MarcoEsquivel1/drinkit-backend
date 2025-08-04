@@ -14,6 +14,26 @@ interface ErrorMsg {
   [key: number]: string;
 }
 
+interface ErrorData {
+  name?: string;
+  message?: string;
+  code?: string;
+}
+
+interface LogData {
+  level: string;
+  message: string;
+  status?: number;
+  stack?: string;
+  timestamp: string;
+  error?: ErrorData;
+  data?: unknown;
+}
+
+interface CustomError extends Error {
+  status?: number;
+}
+
 export const httpErrorMsg: Record<ErrorLng, Partial<ErrorMsg>> = {
   es: {
     200: 'El servidor devolvió exitosamente los datos solicitados.',
@@ -51,17 +71,27 @@ export const httpErrorMsg: Record<ErrorLng, Partial<ErrorMsg>> = {
   },
 };
 
-const logError = (e: any, message?: string, status?: any): void => {
-  const logData = {
+const logError = (e: unknown, message?: string, status?: number): void => {
+  const logData: LogData = {
     level: 'error',
-    message: message || e.message || 'Unknown error',
-    status: status || e.status || 500,
-    stack: e.stack,
+    message: message || (e instanceof Error ? e.message : 'Unknown error'),
+    status:
+      status ||
+      (typeof e === 'object' &&
+      e !== null &&
+      'status' in e &&
+      typeof (e as Record<string, unknown>).status === 'number'
+        ? ((e as Record<string, unknown>).status as number)
+        : 500),
+    stack: e instanceof Error ? e.stack : undefined,
     timestamp: new Date().toISOString(),
     error: {
-      name: e.name,
-      message: e.message,
-      code: e.code,
+      name: e instanceof Error ? e.name : undefined,
+      message: e instanceof Error ? e.message : undefined,
+      code:
+        typeof e === 'object' && e !== null && 'code' in e
+          ? String((e as Record<string, unknown>).code)
+          : undefined,
     },
   };
 
@@ -73,7 +103,7 @@ const logError = (e: any, message?: string, status?: any): void => {
 };
 
 export const handleError = (
-  err: any,
+  err: unknown,
   logger: Logger,
   msg?: string,
 ): {
@@ -88,27 +118,48 @@ export const handleError = (
 
   if (err instanceof AxiosError) {
     status = err.response?.status || 500;
+    const responseData = err.response?.data as Record<string, unknown>;
+    const responseMessage =
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'message' in responseData
+        ? String(responseData.message)
+        : undefined;
     message =
-      err.response?.data?.message ||
-      err.message ||
-      (httpErrorMsg.es[status] as string);
+      responseMessage || err.message || (httpErrorMsg.es[status] as string);
   } else if (err instanceof EntityNotFoundError) {
     status = 404;
     message = httpErrorMsg.es[404] as string;
   } else if (err instanceof QueryFailedError) {
     status = 400;
     message = `Error en consulta de base de datos: ${err.message}`;
-  } else if (err.status) {
-    status = err.status;
-    message = err.message || (httpErrorMsg.es[status] as string);
-  } else if (err.message) {
+  } else if (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    typeof (err as Record<string, unknown>).status === 'number'
+  ) {
+    const errorObj = err as Record<string, unknown>;
+    const statusValue = errorObj.status;
+    const messageValue = errorObj.message;
+
+    if (typeof statusValue === 'number') {
+      status = statusValue;
+    }
+
+    if (typeof messageValue === 'string') {
+      message = messageValue;
+    } else {
+      message = httpErrorMsg.es[status] as string;
+    }
+  } else if (err instanceof Error) {
     message = err.message;
   }
 
   const errorMessage = msg || message;
 
   logError(err, errorMessage, status);
-  logger.error(errorMessage, err.stack);
+  logger.error(errorMessage, (err as Error).stack);
 
   return {
     status,
@@ -123,16 +174,16 @@ export const createError = (
   status: number,
   message?: string,
   lng: ErrorLng = 'es',
-) => {
+): CustomError => {
   const errorMessage =
     message || (httpErrorMsg[lng][status] as string) || 'Error desconocido';
-  const error = new Error(errorMessage) as any;
+  const error = new Error(errorMessage) as CustomError;
   error.status = status;
   return error;
 };
 
-export const logInfo = (message: string, data?: any): void => {
-  const logData = {
+export const logInfo = (message: string, data?: unknown): void => {
+  const logData: LogData = {
     level: 'info',
     message,
     data,
@@ -146,8 +197,8 @@ export const logInfo = (message: string, data?: any): void => {
   console.log('Info logged:', logData);
 };
 
-export const logWarning = (message: string, data?: any): void => {
-  const logData = {
+export const logWarning = (message: string, data?: unknown): void => {
+  const logData: LogData = {
     level: 'warn',
     message,
     data,

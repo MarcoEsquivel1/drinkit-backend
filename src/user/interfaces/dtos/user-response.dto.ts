@@ -4,14 +4,13 @@ import {
   IsBoolean,
   IsOptional,
   IsEmail,
-  IsNumber,
   IsDateString,
 } from 'class-validator';
 
 export class UserResponseDto {
   @Expose()
-  @IsNumber()
-  userId: number;
+  @IsString()
+  userId: string;
 
   @Expose()
   @IsOptional()
@@ -74,9 +73,11 @@ export class UserResponseDto {
   channel: string;
 
   @Expose()
-  @Transform(({ value }) =>
-    value ? `${value.firstname} ${value.lastname}`.trim() : null,
-  )
+  @Transform(({ obj }) => {
+    const firstname = (obj as UserResponseDto)?.firstname;
+    const lastname = (obj as UserResponseDto)?.lastname;
+    return firstname && lastname ? `${firstname} ${lastname}`.trim() : null;
+  })
   fullName?: string;
 
   @Expose()

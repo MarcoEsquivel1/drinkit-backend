@@ -18,7 +18,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
+      test: ['CMD-SHELL', 'pg_isready -U dinkit_user -d dinkit_db']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -72,6 +72,9 @@ services:
       - 127.0.0.1:3000:3000
     environment:
       - NODE_ENV=production
+      - DB_HOST=postgres
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
     env_file:
       - .env
     depends_on:
@@ -82,7 +85,15 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/health',
+        ]
       interval: 30s
       timeout: 10s
       retries: 5

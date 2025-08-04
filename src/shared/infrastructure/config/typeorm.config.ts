@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import 'dotenv/config';
 
 import { ConfigService } from '@nestjs/config';
@@ -21,11 +22,11 @@ export const typeOrmConfig = (conf: ConfigService): any => {
     database = conf.get('DEV_DB_NAME') || conf.get('DB_NAME');
     port = conf.get<number>('DEV_DB_PORT') || conf.get<number>('DB_PORT');
   } else {
-    host = conf.get('POSTGRES_HOST') || conf.get('DB_HOST');
-    username = conf.get('POSTGRES_USERNAME') || conf.get('DB_USERNAME');
-    password = conf.get('POSTGRES_PASSWORD') || conf.get('DB_PASSWORD');
-    database = conf.get('POSTGRES_NAME') || conf.get('DB_NAME');
-    port = conf.get<number>('POSTGRES_PORT') || conf.get<number>('DB_PORT');
+    host = conf.get('DB_HOST');
+    username = conf.get('DB_USERNAME');
+    password = conf.get('DB_PASSWORD');
+    database = conf.get('DB_NAME');
+    port = conf.get<number>('DB_PORT');
   }
 
   return {
@@ -35,7 +36,7 @@ export const typeOrmConfig = (conf: ConfigService): any => {
     username,
     password,
     database,
-    schema: conf.get('POSTGRES_SCHEMA') || 'public',
+    schema: 'public',
     synchronize: false,
     migrationsTableName: 'migrations',
     migrations: [

@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { Admin } from '../../../../admin/infrastructure/database/entities/admin.entity';
 import { User } from './user.entity';
-// import { Admin } from '../../../admin/infrastructure/database/entities/admin.entity';
 
 @Entity('roles')
 export class Role {
@@ -32,6 +32,6 @@ export class Role {
   @OneToMany(() => User, (user) => user.role)
   users: User[];
 
-  @OneToMany('Admin', 'role')
-  admins: any[];
+  @OneToMany(() => Admin, (admin) => admin.role)
+  admins: Admin[];
 }

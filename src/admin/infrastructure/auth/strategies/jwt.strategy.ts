@@ -6,7 +6,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt';
 import { VerifyAccessEvent } from '../../../domain/events/verify-access.event';
-import { JwtPayload } from '../interfaces';
+import { AuthenticationData, JwtPayload } from '../interfaces';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,13 +23,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload, done: VerifiedCallback): Promise<void> {
-    const cacheUser: any = JSON.parse(
-      (await this.cacheService.get(`user-${payload.id}`)) || '{}',
-    );
-    let user = cacheUser;
-    if (!user.id) {
+    const cachedData = await this.cacheService.get(`user-${payload.id}`);
+    let user: AuthenticationData | null = null;
+
+    if (cachedData) {
+      try {
+        user = JSON.parse(cachedData as string) as AuthenticationData;
+      } catch {
+        user = null;
+      }
+    }
+
+    if (!user || !user.id) {
       user = await this.event.check(payload.id);
     }
+
     if (!user) {
       return done(
         new HttpException('UNAUTHORIZED TOKEN', HttpStatus.UNAUTHORIZED),
@@ -42,7 +50,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         false,
       );
     }
-    if (!cacheUser.id) {
+    if (!cachedData && user) {
       await this.cacheService.set(
         `user-${payload.id}`,
         JSON.stringify(user),

@@ -4,23 +4,51 @@ Backend API para la plataforma de comercio electrónico Dinkit, construida con N
 
 ## ⚡ Configuración Simplificada
 
-**¡Solo necesitas 5 comandos para empezar!**
+**¡Solo necesitas 3 comandos para empezar!**
 
 ```bash
-cp environment.example.txt .env                      # Variables preconfiguradas
-docker-compose -f docker-compose.dev.yml up -d       # Servicios (PostgreSQL, MongoDB, Redis)
-./scripts/dev-setup.sh                               # Configuración automática completa
-# O manualmente:
-# docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
-yarn start:dev                                       # ¡Listo! 🚀
+cp environment.example.txt .env           # Variables preconfiguradas
+yarn services:dev                         # Levantar servicios de desarrollo
+yarn migrations:dev && yarn seeds:dev     # Configurar base de datos
 ```
 
-**🚀 Aún más fácil con el script automático:**
+### Desarrollo Rápido
 
 ```bash
-./scripts/dev-setup.sh    # ¡Todo en uno!
-yarn start:dev            # Solo resta iniciar
+# 1. Levantar servicios de desarrollo (PostgreSQL, MongoDB, Redis, API)
+yarn services:dev
+
+# 2. Ejecutar migraciones y seeders dentro del contenedor
+yarn migrations:dev
+yarn seeds:dev
+
+# 3. Los logs se pueden ver con:
+yarn services:dev:logs
 ```
+
+### Testing
+
+```bash
+# Levantar servicios de testing
+yarn services:test
+
+# Configurar base de datos de testing
+yarn migrations:test
+yarn seeds:test
+```
+
+### Producción
+
+```bash
+# Levantar servicios de producción
+yarn services:prod
+
+# Configurar base de datos de producción
+yarn migrations:prod
+yarn seeds:prod
+```
+
+**⚠️ Nota para Windows**: El script `dev-setup.sh` puede tener problemas de line endings en Windows. Usa la configuración manual paso a paso arriba.
 
 El `.env` viene con valores simples: `secret`, `dinkitjwt`, `PORT=3000` ✅
 
@@ -120,50 +148,64 @@ El archivo `.env` viene preconfigurado con valores simples para desarrollo:
 
 ### 4. Configuración con Docker (Recomendado)
 
-#### Opción A: Configuración Automática (Recomendada)
+#### Desarrollo
 
 ```bash
-# Script que hace todo automáticamente
-./scripts/dev-setup.sh
+# Levantar todo el stack de desarrollo (API incluida)
+yarn services:dev
 
-# Iniciar aplicación
-yarn start:dev
+# Configurar base de datos automáticamente
+yarn migrations:dev
+yarn seeds:dev
+
+# Ver logs en tiempo real
+yarn services:dev:logs
+
+# Parar servicios
+yarn services:dev:down
 ```
 
-#### Opción B: Configuración Manual
+#### Testing
 
 ```bash
-# 1. Levantar servicios (PostgreSQL, MongoDB, Redis)
-docker-compose -f docker-compose.dev.yml up -d
+# Levantar stack de testing (puertos diferentes)
+yarn services:test
 
-# 2. Esperar a que PostgreSQL esté listo (importante)
-sleep 15
+# Configurar base de datos de testing
+yarn migrations:test
+yarn seeds:test
 
-# 3. Crear bases de datos adicionales (CRÍTICO)
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
-
-# 4. Ejecutar migraciones
-yarn migrations
-
-# 5. Ejecutar seeders (datos iniciales)
-yarn seeds
-
-# 6. Iniciar en modo desarrollo
-yarn start:dev
+# Parar servicios de testing
+yarn services:test:down
 ```
-
-**⚠️ Nota Importante:** El paso 3 (creación de bases de datos) es crítico. Sin estas bases de datos adicionales, la aplicación mostrará errores constantes de "database does not exist".
-
-La aplicación estará disponible en: `http://localhost:3000`  
-Documentación API (Swagger): `http://localhost:3000/api/docs`
 
 #### Producción
 
 ```bash
-docker-compose up -d
+# Levantar stack de producción
+yarn services:prod
+
+# Configurar base de datos de producción
+yarn migrations:prod
+yarn seeds:prod
+
+# Ver logs de producción
+yarn services:prod:logs
+
+# Parar servicios de producción
+yarn services:prod:down
 ```
+
+**✅ Ventajas de la Nueva Configuración:**
+
+- **Un solo entorno por vez**: Solo se crea la base de datos del entorno actual
+- **Comandos Linux en Windows**: Ejecuta migraciones y seeders desde el contenedor
+- **Separación clara**: Cada entorno tiene su propio docker-compose
+- **API containerizada**: No necesitas Node.js local para desarrollo
+- **Configuración unificada**: Variables de BD consistentes entre aplicación y migraciones
+
+La aplicación estará disponible en: `http://localhost:3000`  
+Documentación API (Swagger): `http://localhost:3000/api/docs`
 
 ### 5. Configuración Manual (Sin Docker)
 
@@ -186,62 +228,60 @@ yarn start:dev
 
 ## 📋 Scripts Disponibles
 
-### Scripts de Configuración Rápida
+### Servicios Docker
 
 ```bash
-# Configuración completa para desarrollo (recomendado para nuevos desarrolladores)
-./scripts/dev-setup.sh
-# o usar make
-make setup
+# Desarrollo
+yarn services:dev           # Levantar servicios de desarrollo
+yarn services:dev:down      # Detener servicios de desarrollo
+yarn services:dev:logs      # Ver logs de desarrollo
 
-# Reiniciar entorno de desarrollo completo
-./scripts/reset-dev.sh
-# o usar make
-make reset
+# Testing
+yarn services:test          # Levantar servicios de testing
+yarn services:test:down     # Detener servicios de testing
+yarn services:test:logs     # Ver logs de testing
 
-# Deployment a producción
-./scripts/production-deploy.sh
-# o usar make
-make deploy
+# Producción
+yarn services:prod          # Levantar servicios de producción
+yarn services:prod:down     # Detener servicios de producción
+yarn services:prod:logs     # Ver logs de producción
 ```
 
-### Desarrollo
+### Base de Datos (Contenedores)
 
 ```bash
-yarn start:dev          # Modo desarrollo con hot reload
-yarn start:debug        # Modo debug
-yarn build              # Compilar aplicación
-yarn start:prod         # Modo producción
+# Migraciones por entorno
+yarn migrations:dev         # Ejecutar migraciones en desarrollo
+yarn migrations:test        # Ejecutar migraciones en testing
+yarn migrations:prod        # Ejecutar migraciones en producción
 
-# Usando Makefile (más fácil)
-make dev                # Modo desarrollo
-make build              # Compilar
-make prod               # Producción
+# Seeders por entorno
+yarn seeds:dev              # Ejecutar seeders en desarrollo
+yarn seeds:test             # Ejecutar seeders en testing
+yarn seeds:prod             # Ejecutar seeders en producción
+
+# Reset completo por entorno
+yarn db:reset:dev           # Reset completo en desarrollo
+yarn db:reset:test          # Reset completo en testing
+yarn db:reset:prod          # Reset completo en producción
 ```
 
-### Base de Datos
+### Desarrollo Local
 
 ```bash
-# Configuración inicial (CRÍTICO para primer setup)
-make create-databases              # Crear bases de datos adicionales
-# O manualmente:
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
+yarn start:dev              # Modo desarrollo local (requiere Node.js local)
+yarn start:debug            # Modo debug
+yarn build                  # Compilar aplicación
+yarn start:prod             # Modo producción
 
-# Migraciones
-yarn migrations                    # Ejecutar migraciones
+# Migraciones locales (requiere conexión directa a BD)
+yarn migrations             # Ejecutar migraciones localmente
 yarn migrations:generate [name]    # Generar nueva migración
 yarn migrations:create [name]      # Crear migración vacía
-yarn migrations:revert            # Revertir última migración
+yarn migrations:revert      # Revertir última migración
 
-# Seeders
-yarn seeds              # Ejecutar todos los seeders
-yarn seeds:test         # Ejecutar seeders en entorno de test
-
-# Usando Makefile
-make create-databases   # ⚠️ CREAR BASES DE DATOS (paso crítico)
-make migrations         # Ejecutar migraciones
-make seeds             # Ejecutar seeders
-make db-reset          # Reiniciar BD completa (drop + migrations + seeds)
+# Seeders locales
+yarn seeds                  # Ejecutar seeders localmente
 ```
 
 ### Testing
@@ -269,31 +309,52 @@ make help              # Ver todos los comandos disponibles
 
 ## 🐳 Docker
 
-### Servicios Disponibles
+### Configuración Multi-Entorno
 
-- **dinkit_api**: Aplicación NestJS
-- **dinkit_pg**: PostgreSQL 15
-- **dinkit_mongo**: MongoDB 7
-- **dinkit_redis**: Redis 7
+El proyecto utiliza **3 archivos Docker Compose** separados para garantizar la independencia de entornos:
 
-### Comandos Docker
+- **`docker-compose.dev.yml`**: Desarrollo (puertos estándar, hot reload)
+- **`docker-compose.test.yml`**: Testing (puertos alternativos para evitar conflictos)
+- **`docker-compose.yml`**: Producción (configuración optimizada)
+
+### Servicios por Entorno
+
+#### Desarrollo (`docker-compose.dev.yml`)
+
+- **dinkit_api_dev**: API con hot reload (puerto 3000)
+- **dinkit_pg_dev**: PostgreSQL para desarrollo (puerto 5432)
+- **dinkit_mongo_dev**: MongoDB para auditoría (puerto 27017)
+- **dinkit_redis_dev**: Redis para caché (puerto 6379)
+
+#### Testing (`docker-compose.test.yml`)
+
+- **dinkit_api_test**: API para testing
+- **dinkit_pg_test**: PostgreSQL para testing (puerto 5433)
+- **dinkit_mongo_test**: MongoDB para testing (puerto 27018)
+- **dinkit_redis_test**: Redis para testing (puerto 6380)
+
+#### Producción (`docker-compose.yml`)
+
+- **dinkit_api_prod**: API optimizada para producción
+- **dinkit_pg_prod**: PostgreSQL para producción
+- **dinkit_mongo_prod**: MongoDB para producción
+- **dinkit_redis_prod**: Redis para producción
+
+### Dockerfile Multi-Stage
+
+```dockerfile
+# development: Para desarrollo con hot reload
+# build: Para compilar la aplicación
+# production: Para ejecución optimizada en producción
+```
+
+### Comandos Simplificados
 
 ```bash
-# Desarrollo
-docker-compose -f docker-compose.dev.yml up -d
-docker-compose -f docker-compose.dev.yml down
-
-# Producción
-docker-compose up -d
-docker-compose down
-
-# Ver logs
-docker-compose logs -f api
-
-# Usando Makefile (simplificado)
-make services-up       # Levantar servicios de desarrollo
-make services-down     # Detener servicios
-make services-logs     # Ver logs en tiempo real
+# Usar los comandos yarn (recomendado)
+yarn services:dev           # En lugar de docker-compose -f docker-compose.dev.yml up -d
+yarn services:dev:down      # En lugar de docker-compose -f docker-compose.dev.yml down
+yarn migrations:dev         # Ejecutar migraciones dentro del contenedor
 ```
 
 ## 📚 API Documentation
@@ -427,60 +488,69 @@ docker-compose up -d
 
 ## 🔧 Solución de Problemas
 
-### Problemas Comunes
+### ✅ Problemas Resueltos con la Nueva Configuración
 
-#### ❌ Error: "database dinkit_dev_db does not exist" (MÁS COMÚN)
+La nueva configuración Docker **elimina la mayoría de problemas comunes**:
 
-Este es el error más frecuente. La aplicación no puede conectarse porque faltan las bases de datos adicionales:
+- ❌ ~~"database dinkit_dev_db does not exist"~~ → ✅ **Resuelto**: Cada entorno crea solo su BD
+- ❌ ~~"authentication failed for user"~~ → ✅ **Resuelto**: Configuración automática por entorno
+- ❌ ~~Comandos Windows con ";"~~ → ✅ **Resuelto**: Se ejecutan dentro del contenedor Linux
+- ❌ ~~Crear 3 bases de datos manualmente~~ → ✅ **Resuelto**: Solo se crea la BD del entorno actual
+- ❌ ~~Variables POSTGRES*\* vs DB*\* inconsistentes~~ → ✅ **Resuelto**: Configuración unificada
+
+### 🔧 Correcciones Realizadas
+
+**Configuración de Base de Datos Unificada:**
+
+- ✅ Eliminados archivos `postgres.config.ts` y `postgres-validation.config.ts` redundantes
+- ✅ `typeorm.config.ts` ahora usa las mismas variables que `database.config.ts`
+- ✅ Variables `POSTGRES_*` reemplazadas por `DB_*`, `DEV_DB_*`, `TEST_DB_*`
+- ✅ Configuración de servicios Docker corregida (postgres, mongo, redis)
+
+### Problemas Actuales y Soluciones
+
+#### ❌ Error: "Cannot connect to Docker daemon"
 
 ```bash
-# 🚀 SOLUCIÓN RÁPIDA: Usar el script automático
-./scripts/dev-setup.sh
+# Verificar que Docker Desktop esté ejecutándose
+docker ps
 
-# 🔧 O crear manualmente las bases de datos faltantes:
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
-
-# Luego ejecutar migraciones y seeders
-yarn migrations && yarn seeds
+# Si no responde, iniciar Docker Desktop y esperar
+# Luego intentar de nuevo:
+yarn services:dev
 ```
 
-#### ❌ Error: "authentication failed for user dinkit_user" (NUEVO PROBLEMA COMÚN)
-
-Este error aparece frecuentemente después de limpiar Docker o recrear contenedores:
+#### ❌ Error: "Port already in use"
 
 ```bash
-# 🚀 SOLUCIÓN COMPLETA: Recrear entorno desde cero
-# 1. Detener y limpiar todos los contenedores y volúmenes
-docker-compose -f docker-compose.dev.yml down -v
+# Verificar qué está usando el puerto
+netstat -ano | findstr :3000   # Windows
+lsof -i :3000                  # Linux/Mac
 
-# 2. Limpiar sistema Docker (opcional, libera espacio)
-docker system prune -f
+# Usar entorno de testing (puertos diferentes)
+yarn services:test
 
-# 3. Reconstruir imágenes sin cache
-docker-compose -f docker-compose.dev.yml build --no-cache
-
-# 4. Levantar servicios
-docker-compose -f docker-compose.dev.yml up -d
-
-# 5. Crear usuario de pruebas (necesario después de recrear contenedores)
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'drinkitpass' SUPERUSER CREATEDB;"
-
-# 6. Crear bases de datos adicionales
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
-
-# 7. Ejecutar migraciones desde el contenedor (más confiable)
-docker exec dinkit_api yarn migrations
+# O parar servicios en conflicto
+yarn services:dev:down
 ```
 
-#### ❌ Error: "Required package missing from disk" o errores de Yarn PnP
+#### ❌ Error: "Container dinkit_api_dev not found"
+
+```bash
+# Los contenedores aún no están levantados
+yarn services:dev
+
+# Esperar unos segundos para que se inicialicen
+# Luego ejecutar migraciones/seeders
+yarn migrations:dev
+yarn seeds:dev
+```
+
+#### ❌ Error: "Required package missing from disk" o errores de Yarn PnP (PROBLEMA EN WINDOWS)
 
 Este problema aparece después de limpiar caché o disk cleanup en Windows:
 
-```bash
+```powershell
 # 🚀 SOLUCIÓN: Limpiar y reinstalar dependencias
 # 1. Limpiar cache de Yarn
 yarn cache clean --all
@@ -492,88 +562,39 @@ Remove-Item -Recurse -Force .yarn\cache -ErrorAction SilentlyContinue
 # 3. Reinstalar dependencias
 yarn install
 
-# 4. Si persiste, ejecutar migraciones desde el contenedor
-docker exec dinkit_api yarn migrations
+# 4. Si persiste, ejecutar seeders desde el contenedor
+docker exec dinkit_api yarn seeds
 ```
 
-#### ❌ Error: hosts "postgres", "mongo", "redis" not found
+#### ❌ Error de scripts de PowerShell: "f() no se reconoce como comando"
 
-Esto indica que el archivo `.env` está configurado para Docker interno pero ejecutando desde el host:
+Los scripts de package.json pueden fallar en PowerShell de Windows:
 
-```bash
-# 🚀 SOLUCIÓN: Ya está corregido en el .env
-# Los hosts deben ser:
-# - localhost: para ejecutar desde el host (fuera de Docker)
-# - postgres/mongo/redis: para ejecutar desde dentro de Docker
+```powershell
+# 🚀 SOLUCIÓN: Usar comandos directos en lugar de scripts complejos
 
-# El archivo .env está configurado con localhost para desarrollo externo
-# Si ejecutas dentro de Docker, usa estos valores:
-docker exec dinkit_api yarn migrations  # Usa nombres de servicios internos
+# En lugar de: yarn migrations:generate
+npx typeorm-ts-node-commonjs migration:generate -d ./src/shared/infrastructure/config/typeorm.config.ts ./src/shared/infrastructure/database/migrations/NombreMigracion
+
+# En lugar de: yarn migrations
+npx typeorm-ts-node-commonjs migration:run -d ./src/shared/infrastructure/config/typeorm.config.ts
+
+# O usar tsx en lugar de ts-node:
+npx tsx ./src/run-migrations.ts
 ```
 
-#### Error de conexión a base de datos
+### ⚠️ Configuración Específica para Windows
 
-```bash
-# Verificar que Docker esté corriendo
-docker ps
-
-# Levantar servicios si no están activos
-docker-compose -f docker-compose.dev.yml up -d
-
-# Verificar que PostgreSQL esté completamente listo
-docker logs dinkit_pg
-```
-
-#### Puerto 3000 ocupado
-
-```bash
-# Cambiar puerto en .env
-PORT=3001
-
-# O terminar proceso que usa el puerto
-netstat -ano | findstr :3000
-taskkill /PID [número_de_proceso] /F
-```
-
-#### Error de migraciones
-
-```bash
-# Resetear migraciones
-yarn typeorm:drop
-yarn migrations
-yarn seeds
-```
-
-#### Variables de entorno no reconocidas
-
-```bash
-# Verificar que el archivo .env existe
-ls -la .env
-
-# Verificar contenido
-cat .env | head -10
-```
-
-#### Problemas con Yarn
-
-```bash
-# Limpiar cache y reinstalar
-rm -rf node_modules yarn.lock
-yarn install
-```
-
-### ⚠️ Cambios Importantes Después de Disk Cleanup
-
-Después de hacer limpieza de disco en Windows, es probable que necesites:
+**Después de hacer limpieza de disco en Windows**, es probable que necesites:
 
 1. **Recrear completamente el entorno Docker** (contenedores, volúmenes, imágenes)
 2. **Reinstalar dependencias de Yarn** (caché corrompido)
 3. **Recrear usuarios de PostgreSQL** (volúmenes recreados)
 4. **Recrear bases de datos** (datos perdidos en limpieza)
 
-**Script de recuperación completa:**
+**Script de recuperación completa para Windows:**
 
-```bash
+```powershell
 # Detener todo
 docker-compose -f docker-compose.dev.yml down -v
 
@@ -594,21 +615,68 @@ docker-compose -f docker-compose.dev.yml up -d
 Start-Sleep -Seconds 20
 
 # Recrear usuarios y bases de datos
-docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'drinkitpass' SUPERUSER CREATEDB;"
+docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE USER dinkit_test_user WITH PASSWORD 'secret' SUPERUSER CREATEDB;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_dev_db;"
 docker exec dinkit_pg psql -U dinkit_user -d postgres -c "CREATE DATABASE dinkit_test_db;"
 
-# Ejecutar migraciones
-docker exec dinkit_api yarn migrations
-
-# Ejecutar seeders
-docker exec dinkit_api yarn seeds
+# Ejecutar seeders (crea tablas y datos)
+yarn seeds
 ```
 
-### Comandos de Diagnóstico
+### Problemas Generales (Multiplataforma)
+
+#### Error de conexión a base de datos
 
 ```bash
+# Verificar que Docker esté corriendo
+docker ps
+
+# Levantar servicios si no están activos
+docker-compose -f docker-compose.dev.yml up -d
+
+# Verificar que PostgreSQL esté completamente listo
+docker logs dinkit_pg
+```
+
+#### Puerto 3000 ocupado
+
+```bash
+# Cambiar puerto en .env
+PORT=3001
+
+# O terminar proceso que usa el puerto (Windows)
+netstat -ano | findstr :3000
+taskkill /PID [número_de_proceso] /F
+
+# Linux/Mac
+lsof -ti:3000 | xargs kill
+```
+
+#### Variables de entorno no reconocidas
+
+```bash
+# Verificar que el archivo .env existe
+ls -la .env  # Linux/Mac
+dir .env     # Windows
+
+# Verificar contenido
+cat .env | head -10    # Linux/Mac
+Get-Content .env       # Windows PowerShell
+```
+
+#### Problemas con Yarn
+
+```bash
+# Limpiar cache y reinstalar
+rm -rf node_modules yarn.lock  # Linux/Mac
+Remove-Item -Recurse -Force node_modules, yarn.lock  # Windows PowerShell
+yarn install
+```
+
+### Comandos de Diagnóstico para Windows
+
+```powershell
 # Verificar estado de servicios Docker
 docker-compose -f docker-compose.dev.yml ps
 
@@ -627,14 +695,20 @@ docker exec dinkit_pg psql -U dinkit_user -d postgres -c "\du"
 # Conectarse a PostgreSQL para diagnóstico
 docker exec -it dinkit_pg psql -U dinkit_user -d dinkit_dev_db
 
+# Verificar que todas las tablas se crearon
+docker exec dinkit_pg psql -U dinkit_user -d dinkit_dev_db -c "\dt"
+
+# Verificar datos de seeders
+docker exec dinkit_pg psql -U dinkit_user -d dinkit_dev_db -c "SELECT COUNT(*) FROM roles; SELECT COUNT(*) FROM countries; SELECT COUNT(*) FROM admins;"
+
 # Conectarse a MongoDB
-docker exec -it dinkit_mongo mongosh --host localhost --port 27017 -u dinkit_audit_user -p drinkitpass
+docker exec -it dinkit_mongo mongosh --host localhost --port 27017 -u dinkit_audit_user -p secret
 
 # Verificar conexión a Redis
 docker exec -it dinkit_redis redis-cli ping
 
 # Ver todas las variables de entorno cargadas
-docker exec dinkit_api env | grep -E "(DB_|MONGO_|REDIS_|JWT_)"
+docker exec dinkit_api env | Select-String -Pattern "(DB_|MONGO_|REDIS_|JWT_)"
 
 # Verificar que Yarn funcione dentro del contenedor
 docker exec dinkit_api yarn --version
@@ -684,6 +758,68 @@ make services-up       # Levantar servicios
 - **`scripts/dev-setup.sh`**: Configuración automática del entorno de desarrollo
 - **`scripts/reset-dev.sh`**: Reinicio completo del entorno
 - **`scripts/production-deploy.sh`**: Deployment automatizado a producción
+
+## 🚀 Flujo de Trabajo Recomendado
+
+### Para Desarrollo Diario
+
+```bash
+# 1. Levantar servicios (solo la primera vez o después de cambios en Docker)
+yarn services:dev
+
+# 2. Ver logs en tiempo real (en otra terminal)
+yarn services:dev:logs
+
+# 3. Si hay cambios en migraciones/seeders
+yarn migrations:dev
+yarn seeds:dev
+
+# 4. Al terminar el día
+yarn services:dev:down
+```
+
+### Para Testing
+
+```bash
+# 1. Levantar servicios de testing (puertos diferentes)
+yarn services:test
+
+# 2. Ejecutar tests
+yarn test
+
+# 3. Limpiar al terminar
+yarn services:test:down
+```
+
+### Para Producción
+
+```bash
+# 1. Levantar servicios de producción
+yarn services:prod
+
+# 2. Configurar base de datos
+yarn migrations:prod
+yarn seeds:prod
+
+# 3. Monitorear logs
+yarn services:prod:logs
+```
+
+### Reset de Entorno (Si algo sale mal)
+
+```bash
+# Para desarrollo
+yarn services:dev:down
+yarn services:dev
+yarn migrations:dev
+yarn seeds:dev
+
+# Para testing
+yarn services:test:down
+yarn services:test
+yarn migrations:test
+yarn seeds:test
+```
 
 ## 📞 Soporte
 

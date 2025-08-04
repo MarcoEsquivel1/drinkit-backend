@@ -27,23 +27,14 @@ export class Variant {
   @Column({ type: 'varchar', nullable: true })
   imageProduct: string;
 
-  @Column({ type: 'double precision', nullable: false })
-  regularPrice: number;
-
-  @Column({ type: 'double precision', nullable: true })
-  promotionPrice: number;
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: false })
+  price: number;
 
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
   @Column({ type: 'int', nullable: true, default: 0 })
   units: number;
-
-  @Column({ type: 'double precision', nullable: true })
-  weight: number;
-
-  @Column({ type: 'date', nullable: true })
-  deactivatedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;

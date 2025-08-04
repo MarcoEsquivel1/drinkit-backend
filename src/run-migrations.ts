@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import 'dotenv/config';
 import dataSource from './shared/infrastructure/config/typeorm.config';
 
@@ -28,4 +29,7 @@ async function runMigrations() {
   }
 }
 
-runMigrations();
+runMigrations().catch((error) => {
+  console.error('❌ Error inesperado:', error);
+  process.exit(1);
+});

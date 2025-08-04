@@ -27,9 +27,10 @@ export class CredentialsStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: (req: Request) => {
-        let token = null;
-        if (req?.cookies?.admnpomtkn) {
-          token = req.cookies.admnpomtkn;
+        let token: string | null = null;
+        const cookies = req?.cookies as Record<string, string> | undefined;
+        if (cookies?.admnpomtkn) {
+          token = cookies.admnpomtkn;
         }
         return token;
       },
@@ -77,7 +78,18 @@ export class CredentialsStrategy extends PassportStrategy(
     sleep = 0,
   ): Promise<AuthenticationData> {
     await wait(sleep);
-    return JSON.parse((await this.cacheService.get(`user-${id}`)) || '{}');
+    const cachedData = await this.cacheService.get(`user-${id}`);
+
+    if (!cachedData) {
+      return {} as AuthenticationData;
+    }
+
+    try {
+      return JSON.parse(cachedData as string) as AuthenticationData;
+    } catch (error) {
+      this.logger.error('Error parsing cached data:', error);
+      return {} as AuthenticationData;
+    }
   }
 
   private async performDataRefresh(id: string): Promise<AuthenticationData> {

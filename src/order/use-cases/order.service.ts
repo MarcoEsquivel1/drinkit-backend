@@ -8,7 +8,6 @@ import {
   OrderDetailHistory,
   PurchaseStatus,
   Cart,
-  CartItem,
 } from '../infrastructure/database/entities';
 
 @Injectable()
@@ -26,7 +25,5 @@ export class OrderService {
     private purchaseStatusRepository: Repository<PurchaseStatus>,
     @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
-    @InjectRepository(CartItem)
-    private cartItemRepository: Repository<CartItem>,
   ) {}
 }

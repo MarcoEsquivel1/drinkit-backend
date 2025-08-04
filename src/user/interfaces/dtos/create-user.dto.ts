@@ -16,7 +16,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(50)
-  @Transform(({ value }) => value?.toLowerCase().trim())
+  @Transform(({ value }) => (value as string)?.toLowerCase().trim())
   username: string;
 
   @IsString()
@@ -32,25 +32,25 @@ export class CreateUserDto {
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (value as string)?.trim())
   firstname?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (value as string)?.trim())
   lastname?: string;
 
   @IsOptional()
   @IsEmail()
   @MaxLength(255)
-  @Transform(({ value }) => value?.toLowerCase().trim())
+  @Transform(({ value }) => (value as string)?.toLowerCase().trim())
   email?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(20)
-  @Matches(/^[\+]?[1-9][\d]{0,15}$/, {
+  @Matches(/^[+]?[1-9][\d]{0,15}$/, {
     message: 'Formato de teléfono inválido',
   })
   phone?: string;
@@ -70,7 +70,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (value as string)?.trim())
   companyname?: string;
 
   @IsOptional()

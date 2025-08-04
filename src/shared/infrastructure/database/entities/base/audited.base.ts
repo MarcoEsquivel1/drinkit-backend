@@ -16,6 +16,7 @@ abstract class BaseEntity {
   createdAt: Date;
 
   @Column({
+    type: 'varchar',
     name: 'created_by',
     update: false,
     comment: 'Info of the creator.',
@@ -32,6 +33,7 @@ abstract class BaseEntity {
   updatedAt?: Date;
 
   @Column({
+    type: 'varchar',
     name: 'updated_by',
     nullable: true,
     insert: false,
@@ -62,7 +64,7 @@ export abstract class SimpleAuditedWithIdEntity extends BaseEntity {
   })
   id: number;
 
-  @Column({ nullable: false, comment: 'Field for the name.' })
+  @Column({ type: 'varchar', nullable: false, comment: 'Field for the name.' })
   name!: string;
 }
 
@@ -70,6 +72,6 @@ export abstract class SimpleAuditedWithUuidEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', { comment: 'ID of the entity.' })
   id: string;
 
-  @Column({ nullable: false, comment: 'Field for the name.' })
+  @Column({ type: 'varchar', nullable: false, comment: 'Field for the name.' })
   name!: string;
 }

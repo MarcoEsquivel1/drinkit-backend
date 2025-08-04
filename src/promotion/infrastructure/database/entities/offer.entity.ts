@@ -42,14 +42,14 @@ export class Offer {
   @Column({ type: 'boolean', nullable: false, default: false })
   isFlashOffer: boolean;
 
-  @Column({ type: 'json', nullable: false, default: {} })
-  products: any;
+  @Column({ type: 'json', nullable: false, default: [] })
+  products: number[];
 
-  @Column({ type: 'json', nullable: false, default: {} })
-  categories: any;
+  @Column({ type: 'json', nullable: false, default: [] })
+  categories: number[];
 
-  @Column({ type: 'json', nullable: false, default: {} })
-  subcategories: any;
+  @Column({ type: 'json', nullable: false, default: [] })
+  subcategories: number[];
 
   @Column({ type: 'int', nullable: false })
   createdBy: number;

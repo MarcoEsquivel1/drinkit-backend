@@ -35,14 +35,10 @@ TEST_DB_USERNAME=dinkit_test_user
 TEST_DB_PASSWORD=secret
 TEST_DB_NAME=dinkit_test_db
 
-# Variables para TypeORM CLI y migraciones
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USERNAME=dinkit_user
-POSTGRES_PASSWORD=secret
-POSTGRES_NAME=dinkit_db
-POSTGRES_SCHEMA=public
-POSTGRES_USE_SSL=false
+# ================================
+# CONFIGURACIÓN SIMPLIFICADA - LAS VARIABLES POSTGRES_* YA NO SON NECESARIAS
+# ================================
+# TypeORM CLI y migraciones ahora usan las mismas variables DB_* que la aplicación
 
 # ================================
 # MONGODB (AUDITORÍA Y LOGS - USADAS ACTUALMENTE)
@@ -65,6 +61,28 @@ REDIS_DATABASES=0
 # AUTENTICACIÓN JWT (USADAS ACTUALMENTE)
 # ================================
 JWT_SECRET=dinkitjwt
+
+# ================================
+# AUTENTICACIÓN SOCIAL (USADAS ACTUALMENTE)
+# ================================
+
+# URLs de la API para callbacks OAuth
+DRINKIT_API_URL=https://your-production-api.com/
+DRINKIT_DEV_API_URL=http://localhost:3000/
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Facebook OAuth  
+FACEBOOK_CLIENT_ID=your-facebook-client-id
+FACEBOOK_CLIENT_SECRET=your-facebook-client-secret
+
+# Apple OAuth (más complejo, requiere archivos de certificado)
+APPLE_CLIENT_ID=your-apple-client-id
+APPLE_TEAM_ID=your-apple-team-id
+APPLE_KEY_ID=your-apple-key-id
+APPLE_KEY_LOCATION=./certs/apple-key.p8
 
 # ================================
 # LOGGING Y MONITOREO (USADAS ACTUALMENTE)

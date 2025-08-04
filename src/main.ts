@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -40,6 +43,12 @@ async function bootstrap() {
       name: 'admnpomtkn',
       description: 'Cookie de autenticación de administrador',
     })
+    .addCookieAuth('custmrpomtkn', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'custmrpomtkn',
+      description: 'Cookie de autenticación de customer',
+    })
     .addApiKey(
       {
         type: 'apiKey',
@@ -49,7 +58,9 @@ async function bootstrap() {
       },
       'api-key',
     )
-    .addTag('Authentication', 'Endpoints de autenticación y autorización')
+    .addTag('Admin Auth', 'Autenticación y autorización de administradores')
+    .addTag('Admin', 'Gestión de administradores del sistema')
+    .addTag('User Auth', 'Autenticación y autorización de usuarios')
     .addTag('Users', 'Gestión de usuarios del sistema')
     .addTag('Products', 'Gestión del catálogo de productos')
     .addTag('Categories', 'Gestión de categorías y subcategorías')
@@ -59,7 +70,13 @@ async function bootstrap() {
     .addTag('Location', 'Gestión geográfica (países, estados, ciudades)')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [],
+    deepScanRoutes: true,
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    include: [],
+  });
+
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
@@ -78,4 +95,4 @@ async function bootstrap() {
   console.log(`🚀 Aplicación ejecutándose en: http://localhost:${port}`);
   console.log(`📚 Documentación Swagger: http://localhost:${port}/api/docs`);
 }
-bootstrap();
+void bootstrap();

@@ -1,4 +1,4 @@
-import { FindOptionsWhere, ILike } from 'typeorm';
+import { FindOptionsWhere, FindOptionsWhereProperty, ILike } from 'typeorm';
 
 export const genSimpleWhere = <T>(
   query: string,
@@ -32,7 +32,7 @@ export const genAdvancedWhere = <T>(
       if (!current[part]) {
         current[part] = {};
       }
-      current = current[part];
+      current = current[part] as FindOptionsWhere<T>;
     }
 
     const lastPart = fieldParts[fieldParts.length - 1];
@@ -69,18 +69,22 @@ export const addDateRangeCondition = <T>(
   const updatedWhere = { ...where };
 
   if (startDate || endDate) {
-    const dateCondition: any = {};
-
+    const dateCondition: { gte?: Date; lte?: Date } = {};
     if (startDate && endDate) {
-      dateCondition.gte = startDate;
-      dateCondition.lte = endDate;
+      Object.assign(dateCondition, { gte: startDate, lte: endDate });
     } else if (startDate) {
-      dateCondition.gte = startDate;
+      Object.assign(dateCondition, { gte: startDate });
     } else if (endDate) {
-      dateCondition.lte = endDate;
+      Object.assign(dateCondition, { lte: endDate });
     }
 
-    updatedWhere[dateField] = dateCondition;
+    updatedWhere[dateField] =
+      dateCondition as unknown as keyof T extends 'toString'
+        ? unknown
+        : FindOptionsWhereProperty<
+            NonNullable<T[keyof T]>,
+            NonNullable<T[keyof T]>
+          >;
   }
 
   return updatedWhere;
@@ -89,7 +93,7 @@ export const addDateRangeCondition = <T>(
 export const addInCondition = <T>(
   where: FindOptionsWhere<T>,
   field: keyof T,
-  values?: any[],
+  values?: T[keyof T][],
 ): FindOptionsWhere<T> => {
   if (!values || values.length === 0) {
     return where;
@@ -97,6 +101,9 @@ export const addInCondition = <T>(
 
   return {
     ...where,
-    [field]: values.length === 1 ? values[0] : { in: values },
+    [field]:
+      values.length === 1
+        ? values[0]
+        : ({ in: values } as FindOptionsWhereProperty<T[keyof T], T[keyof T]>),
   };
 };

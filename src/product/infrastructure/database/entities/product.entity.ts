@@ -11,7 +11,6 @@ import {
   MaxLength,
   IsPositive,
   IsUrl,
-  IsNotEmpty,
   IsInt,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -20,6 +19,8 @@ import { ParanoidWithIdEntity } from '../../../../shared/infrastructure/database
 import { Category } from './category.entity';
 import { SubCategory } from './subcategory.entity';
 import { Variant } from './variant.entity';
+
+import { OrderDetail } from '../../../../order/infrastructure/database/entities/order-detail.entity';
 
 @Entity('products')
 export class Product extends ParanoidWithIdEntity {
@@ -44,7 +45,12 @@ export class Product extends ParanoidWithIdEntity {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim().toUpperCase())
+  @Transform(
+    ({ value }) =>
+      (typeof value === 'string'
+        ? value.trim().toUpperCase()
+        : value) as string,
+  )
   @Expose()
   sku: string;
 
@@ -53,7 +59,9 @@ export class Product extends ParanoidWithIdEntity {
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   name: string;
 
@@ -62,7 +70,9 @@ export class Product extends ParanoidWithIdEntity {
   @IsString()
   @MinLength(10)
   @MaxLength(2000)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   description: string;
 
@@ -74,9 +84,9 @@ export class Product extends ParanoidWithIdEntity {
   @Expose()
   image?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: false })
   @ApiProperty({
-    description: 'Precio regular del producto',
+    description: 'Precio del producto',
     minimum: 0.01,
     maximum: 999999.99,
   })
@@ -85,20 +95,7 @@ export class Product extends ParanoidWithIdEntity {
   @Min(0.01)
   @Max(999999.99)
   @Expose()
-  regularPrice: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  @ApiPropertyOptional({
-    description: 'Precio promocional del producto',
-    minimum: 0,
-    maximum: 999999.99,
-  })
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(999999.99)
-  @Expose()
-  promotionPrice?: number;
+  price: number;
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
@@ -109,38 +106,6 @@ export class Product extends ParanoidWithIdEntity {
   @Expose()
   active: boolean;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  @ApiPropertyOptional({
-    description: 'Grado alcohólico del producto (para bebidas)',
-    minimum: 0,
-    maximum: 100,
-  })
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(100)
-  @Expose()
-  alcoholicGrade?: number;
-
-  @Column({ type: 'decimal', precision: 8, scale: 3, nullable: true })
-  @ApiPropertyOptional({
-    description: 'Peso del producto en gramos',
-    minimum: 0,
-  })
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 3 })
-  @Min(0)
-  @Expose()
-  weight?: number;
-
-  @Column({ type: 'decimal', precision: 8, scale: 3, nullable: true })
-  @ApiPropertyOptional({ description: 'Tamaño del producto', minimum: 0 })
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 3 })
-  @Min(0)
-  @Expose()
-  size?: number;
-
   @Column({ type: 'varchar', length: 100, nullable: true })
   @ApiPropertyOptional({ description: 'Marca del producto', maxLength: 100 })
   @IsOptional()
@@ -148,18 +113,6 @@ export class Product extends ParanoidWithIdEntity {
   @MaxLength(100)
   @Expose()
   brand?: string;
-
-  @Column({ type: 'int', nullable: true, default: 0 })
-  @ApiPropertyOptional({
-    description: 'Stock disponible del producto',
-    minimum: 0,
-    default: 0,
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Expose()
-  stock?: number;
 
   @Column({ type: 'text', array: true, nullable: true })
   @ApiPropertyOptional({
@@ -171,12 +124,6 @@ export class Product extends ParanoidWithIdEntity {
   @IsString({ each: true })
   @Expose()
   keywords?: string[];
-
-  @Column({ type: 'timestamptz', nullable: true, name: 'deactivated_at' })
-  @ApiPropertyOptional({ description: 'Fecha de desactivación del producto' })
-  @IsOptional()
-  @Expose()
-  deactivatedAt?: Date;
 
   @Column({ type: 'int', nullable: false, default: 0 })
   @ApiProperty({
@@ -250,6 +197,10 @@ export class Product extends ParanoidWithIdEntity {
   @ApiProperty({ description: 'Variantes del producto', type: () => [Variant] })
   variants: Variant[];
 
-  cartItems: any[];
-  orderDetails: any[];
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.product)
+  @ApiProperty({
+    description: 'Detalles de la orden',
+    type: () => [OrderDetail],
+  })
+  orderDetails: OrderDetail[];
 }

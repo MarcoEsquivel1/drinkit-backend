@@ -30,21 +30,30 @@ export class CreateProductDto {
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim().toUpperCase())
+  @Transform(
+    ({ value }) =>
+      (typeof value === 'string'
+        ? value.trim().toUpperCase()
+        : value) as string,
+  )
   sku: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   nameProduct: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(10)
   @MaxLength(2000)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   descriptionProduct: string;
 
   @IsOptional()
@@ -57,49 +66,19 @@ export class CreateProductDto {
   @Min(0.01)
   @Max(999999.99)
   @Type(() => Number)
-  regularPrice: number;
-
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(999999.99)
-  @Type(() => Number)
-  promotionPrice?: number;
+  price: number;
 
   @IsOptional()
   @IsBoolean()
   active?: boolean;
 
   @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(100)
-  @Type(() => Number)
-  alcoholicGrade?: number;
-
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
-  @Type(() => Number)
-  weight?: number;
-
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
-  @Type(() => Number)
-  size?: number;
-
-  @IsOptional()
   @IsString()
   @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   brand?: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  stock?: number;
 
   @IsOptional()
   @IsArray()
@@ -107,7 +86,11 @@ export class CreateProductDto {
   @ArrayMinSize(1)
   @Transform(({ value }) =>
     Array.isArray(value)
-      ? value.map((keyword) => keyword?.trim().toLowerCase())
+      ? value.map((keyword) =>
+          typeof keyword === 'string'
+            ? keyword.trim().toLowerCase()
+            : (keyword as string),
+        )
       : [],
   )
   keywords?: string[];
@@ -126,7 +109,9 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   presentation?: string;
 
   @IsOptional()

@@ -17,6 +17,7 @@ abstract class BaseEntity {
   createdAt: Date;
 
   @Column({
+    type: 'varchar',
     name: 'created_by',
     update: false,
     comment: 'Info of the creator.',
@@ -33,6 +34,7 @@ abstract class BaseEntity {
   updatedAt?: Date;
 
   @Column({
+    type: 'varchar',
     name: 'updated_by',
     nullable: true,
     insert: false,
@@ -59,6 +61,7 @@ export abstract class ParanoidWithIdEntity extends BaseEntity {
   id: number;
 
   @Column({
+    type: 'varchar',
     name: 'deleted_by',
     nullable: true,
     insert: false,
@@ -72,6 +75,7 @@ export abstract class ParanoidWithUuidEntity extends BaseEntity {
   id: string;
 
   @Column({
+    type: 'varchar',
     name: 'deleted_by',
     nullable: true,
     insert: false,

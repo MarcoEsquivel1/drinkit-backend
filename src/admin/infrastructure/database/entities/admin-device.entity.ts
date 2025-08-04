@@ -4,13 +4,17 @@ import { Admin } from './admin.entity';
 
 @Entity('admin_devices')
 export class AdminDevice extends AuditedWithIdEntity {
-  @Column({ nullable: true, comment: 'Push token of the device' })
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    comment: 'Push token of the device',
+  })
   token?: string;
 
-  @Column({ nullable: true, comment: 'UUID of the device' })
+  @Column({ type: 'varchar', nullable: true, comment: 'UUID of the device' })
   uuid?: string;
 
-  @Column({ name: 'fk_admin_id' })
+  @Column({ type: 'uuid', name: 'fk_admin_id' })
   adminId: string;
 
   @ManyToOne(() => Admin, (admin) => admin.devices)

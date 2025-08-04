@@ -90,3 +90,11 @@ ehthumbs_vista.db
 # Local configuration files
 config/local.js
 config/local.json
+
+# Certificates and keys (keep mock files, ignore real ones)
+/certs/*.p8
+!/certs/apple-key.p8
+/keys/
+*.pem
+*.key
+*.crt

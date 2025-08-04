@@ -1,10 +1,10 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { IsString, IsOptional, IsDateString } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { IsString, IsInt, IsPositive, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { ParanoidWithIdEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { User } from '../../../../user/infrastructure/database/entities/user.entity';
-import { CartItem } from './cart-item.entity';
+import { Product } from '../../../../product/infrastructure/database/entities/product.entity';
 
 @Entity('carts')
 export class Cart extends ParanoidWithIdEntity {
@@ -14,12 +14,23 @@ export class Cart extends ParanoidWithIdEntity {
   @Expose()
   userId: string;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'deactivated_at' })
-  @ApiPropertyOptional({ description: 'Fecha de desactivación del carrito' })
-  @IsOptional()
-  @IsDateString()
+  @Column({ type: 'int', nullable: false, name: 'product_id' })
+  @ApiProperty({ description: 'ID del producto en el carrito' })
+  @IsInt()
+  @IsPositive()
   @Expose()
-  deactivatedAt?: Date;
+  productId: number;
+
+  @Column({ type: 'int', nullable: false })
+  @ApiProperty({
+    description: 'Cantidad del producto en el carrito',
+    minimum: 1,
+  })
+  @IsInt()
+  @IsPositive()
+  @Min(1)
+  @Expose()
+  quantity: number;
 
   @ManyToOne(() => User, (user) => user.carts)
   @JoinColumn({ name: 'user_id' })
@@ -29,7 +40,8 @@ export class Cart extends ParanoidWithIdEntity {
   })
   user: User;
 
-  @OneToMany(() => CartItem, (cartItem) => cartItem.cart)
-  @ApiProperty({ description: 'Items del carrito', type: () => [CartItem] })
-  cartItems: CartItem[];
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'product_id' })
+  @ApiProperty({ description: 'Producto del carrito', type: () => Product })
+  product: Product;
 }

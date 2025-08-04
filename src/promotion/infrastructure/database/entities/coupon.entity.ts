@@ -9,7 +9,6 @@ import {
   IsEnum,
   IsDateString,
   Min,
-  Max,
   MinLength,
   MaxLength,
 } from 'class-validator';
@@ -45,7 +44,12 @@ export class Coupon extends ParanoidWithIdEntity {
   @IsString()
   @MinLength(3)
   @MaxLength(50)
-  @Transform(({ value }) => value?.trim().toUpperCase())
+  @Transform(
+    ({ value }) =>
+      (typeof value === 'string'
+        ? value.trim().toUpperCase()
+        : value) as string,
+  )
   @Expose()
   code: string;
 

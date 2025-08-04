@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { Product } from 'src/product/infrastructure/database/entities/product.entity';
-import { Category } from 'src/product/infrastructure/database/entities/category.entity';
-import { SubCategory } from 'src/product/infrastructure/database/entities/subcategory.entity';
+import { Product } from '../../../../product/infrastructure/database/entities/product.entity';
+import { Category } from '../../../../product/infrastructure/database/entities/category.entity';
+import { SubCategory } from '../../../../product/infrastructure/database/entities/subcategory.entity';
 import { OrderDetailHistory } from './order-detail-history.entity';
 
 @Entity('ordersDetails')
@@ -28,7 +28,7 @@ export class OrderDetail {
   @Column({ type: 'text', nullable: false })
   image: string;
 
-  @Column({ type: 'double precision', nullable: false })
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: false })
   price: number;
 
   @Column({ type: 'int', nullable: false })
@@ -61,10 +61,22 @@ export class OrderDetail {
   @Column({ type: 'int', nullable: false, default: 0 })
   unityPerBox: number;
 
-  @Column({ type: 'double precision', nullable: false, default: 0 })
+  @Column({
+    type: 'numeric',
+    precision: 5,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   discount: number;
 
-  @Column({ type: 'double precision', nullable: false, default: 0 })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   envase: number;
 
   @Column({ type: 'text', nullable: false, default: 'unidad' })
@@ -80,15 +92,15 @@ export class OrderDetail {
   @JoinColumn({ name: 'fk_ordersId' })
   order: Order;
 
-  @ManyToOne(() => Product, (product) => product.orderDetails)
+  @ManyToOne(() => Product, 'orderDetails')
   @JoinColumn({ name: 'fk_productId' })
   product: Product;
 
-  @ManyToOne(() => Category, (category) => category.orderDetails)
+  @ManyToOne(() => Category, 'orderDetails')
   @JoinColumn({ name: 'fk_categoryId' })
   productCategory: Category;
 
-  @ManyToOne(() => SubCategory, (subCategory) => subCategory.orderDetails)
+  @ManyToOne(() => SubCategory, 'orderDetails')
   @JoinColumn({ name: 'fk_subCategoryId' })
   subcategory: SubCategory;
 

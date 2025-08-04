@@ -11,6 +11,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
 import { AuditedWithIdEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { State } from './state.entity';
+import { UsersAddress } from '../../../../user/infrastructure/database/entities/users-address.entity';
+import { UsersRequest } from '../../../../user/infrastructure/database/entities/users-request.entity';
 
 @Entity('countries')
 export class Country extends AuditedWithIdEntity {
@@ -19,7 +21,9 @@ export class Country extends AuditedWithIdEntity {
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  @Transform(({ value }) => value?.trim())
+  @Transform(
+    ({ value }) => (typeof value === 'string' ? value.trim() : value) as string,
+  )
   @Expose()
   name: string;
 
@@ -29,7 +33,10 @@ export class Country extends AuditedWithIdEntity {
   @IsString()
   @Length(2, 2)
   @Matches(/^[A-Z]{2}$/, { message: 'ISO2 debe ser 2 letras mayúsculas' })
-  @Transform(({ value }) => value?.toUpperCase())
+  @Transform(
+    ({ value }) =>
+      (typeof value === 'string' ? value.toUpperCase() : value) as string,
+  )
   @Expose()
   iso2?: string;
 
@@ -39,7 +46,10 @@ export class Country extends AuditedWithIdEntity {
   @IsString()
   @Length(3, 3)
   @Matches(/^[A-Z]{3}$/, { message: 'ISO3 debe ser 3 letras mayúsculas' })
-  @Transform(({ value }) => value?.toUpperCase())
+  @Transform(
+    ({ value }) =>
+      (typeof value === 'string' ? value.toUpperCase() : value) as string,
+  )
   @Expose()
   iso3?: string;
 
@@ -65,6 +75,6 @@ export class Country extends AuditedWithIdEntity {
   })
   states: State[];
 
-  usersAddresses: any[];
-  usersRequests: any[];
+  usersAddresses: UsersAddress[];
+  usersRequests: UsersRequest[];
 }

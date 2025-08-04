@@ -1,11 +1,5 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import {
-  IsEmail,
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsDateString } from 'class-validator';
 import { Expose } from 'class-transformer';
 import { BaseCustomerEntity } from '../../../../shared/infrastructure/database/entities/base';
 import { Role } from './role.entity';
@@ -15,28 +9,31 @@ import { UsersFavorite } from './users-favorite.entity';
 import { UsersInvoice } from './users-invoice.entity';
 import { UsersRequest } from './users-request.entity';
 import { UsersTransaction } from './users-transaction.entity';
+import { Cart } from '../../../../order/infrastructure/database/entities/cart.entity';
+import { Order } from '../../../../order/infrastructure/database/entities/order.entity';
+import { CouponUsage } from '../../../../promotion/infrastructure/database/entities/coupon-usage.entity';
 
 @Entity('users')
 export class User extends BaseCustomerEntity {
-  @Column({ nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   @IsOptional()
   @IsDateString()
   @Expose()
   birthdate?: Date;
 
-  @Column({ nullable: true, name: 'facebook_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'facebook_id' })
   @IsOptional()
   @IsString()
   @Expose()
   facebookId?: string;
 
-  @Column({ nullable: true, name: 'google_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'google_id' })
   @IsOptional()
   @IsString()
   @Expose()
   googleId?: string;
 
-  @Column({ nullable: true, name: 'apple_id' })
+  @Column({ type: 'varchar', nullable: true, name: 'apple_id' })
   @IsOptional()
   @IsString()
   @Expose()
@@ -45,12 +42,12 @@ export class User extends BaseCustomerEntity {
   @Column({ type: 'integer', default: 3, name: 'fk_role_id' })
   roleId?: number;
 
-  @Column({ default: false, name: 'is_logged_in' })
+  @Column({ type: 'boolean', default: false, name: 'is_logged_in' })
   @IsBoolean()
   @Expose()
   isLoggedIn?: boolean;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   @IsBoolean()
   @Expose()
   verify?: boolean;
@@ -77,12 +74,12 @@ export class User extends BaseCustomerEntity {
   @OneToMany(() => UsersTransaction, (transaction) => transaction.user)
   transactions: UsersTransaction[];
 
-  @OneToMany('Order', 'user')
-  orders: any[];
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 
-  @OneToMany('Cart', 'user')
-  carts: any[];
+  @OneToMany(() => Cart, (cart) => cart.user)
+  carts: Cart[];
 
-  @OneToMany('CouponUsage', 'user')
-  couponUsages: any[];
+  @OneToMany(() => CouponUsage, (couponUsage) => couponUsage.user)
+  couponUsages: CouponUsage[];
 }

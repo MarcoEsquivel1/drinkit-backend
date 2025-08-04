@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { postgresConfiguration } from '../config/postgres.config';
-import { postgresValidationSchema } from '../config/postgres-validation.config';
-import { typeOrmConfig } from '../config/typeorm.config';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { getDatabaseConfig } from '../config/database.config';
 import { DatabaseLogger } from './database.logger';
 import { AuditModule } from './audit/audit.module';
 import { TransactionProvider } from './providers/transaction.provider';
@@ -26,8 +24,6 @@ const providers = [
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: false,
-      load: [postgresConfiguration],
-      validationSchema: postgresValidationSchema,
       validationOptions: {
         allowUnknown: true,
         abortEarly: false,
@@ -35,8 +31,8 @@ const providers = [
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        ...typeOrmConfig(configService),
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
+        ...getDatabaseConfig(configService),
         retryAttempts: 2,
         subscribers: [
           `${__dirname}/**/subscribers/**/*.subscriber{.ts,.js}`,

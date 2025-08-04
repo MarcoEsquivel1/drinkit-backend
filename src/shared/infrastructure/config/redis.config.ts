@@ -7,10 +7,10 @@ export const getRedisConfig = async (
 ): Promise<CacheModuleOptions> => {
   return {
     store: await redisStore({
-      host: configService.get('REDIS_HOST'),
-      port: configService.get('REDIS_PORT'),
-      password: configService.get('REDIS_PASSWORD'),
-      db: configService.get('REDIS_DATABASES'),
+      host: configService.get('REDIS_HOST') as string,
+      port: configService.get('REDIS_PORT') as number,
+      password: configService.get('REDIS_PASSWORD') as string,
+      db: configService.get('REDIS_DATABASES') as number,
       ttl: 86400,
     }),
     isGlobal: true,

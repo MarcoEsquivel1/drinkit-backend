@@ -7,10 +7,10 @@ volumes:
 
 services:
   postgres:
-    container_name: dinkit_pg
+    container_name: dinkit_pg_dev
     image: postgres:15
     ports:
-      - '${DB_PORT}:5432'
+      - '${DEV_DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -18,13 +18,13 @@ services:
       POSTGRES_USER: ${DEV_DB_USERNAME}
       POSTGRES_PASSWORD: ${DEV_DB_PASSWORD}
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DEV_DB_USERNAME} -d ${DEV_DB_NAME}']
+      test: ['CMD-SHELL', 'pg_isready -U dinkit_user -d dinkit_dev_db']
       interval: 30s
       timeout: 10s
       retries: 3
 
   mongo:
-    container_name: dinkit_mongo
+    container_name: dinkit_mongo_dev
     image: mongo:7
     ports:
       - '${MONGO_PORT}:27017'
@@ -42,7 +42,7 @@ services:
       retries: 3
 
   redis:
-    container_name: dinkit_redis
+    container_name: dinkit_redis_dev
     image: redis:7-alpine
     ports:
       - '${REDIS_PORT}:6379'
@@ -61,7 +61,7 @@ services:
       retries: 3
 
   api:
-    container_name: dinkit_api
+    container_name: dinkit_api_dev
     build:
       context: .
       target: development
@@ -73,6 +73,9 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=development
+      - DEV_DB_HOST=postgres
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
     env_file:
       - .env
     depends_on:
@@ -83,7 +86,15 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/health',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

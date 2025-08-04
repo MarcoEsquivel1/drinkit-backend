@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +8,8 @@ import { AuthenticationData } from '../../infrastructure/auth/interfaces';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
@@ -22,100 +20,146 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<AuthenticationData | null> {
-    const admin = await this.adminRepository.findOne({
-      where: { email, deletedAt: IsNull() },
-      relations: ['role'],
-    });
+    try {
+      const admin = await this.adminRepository.findOne({
+        where: { email, deletedAt: IsNull() },
+        relations: ['role'],
+      });
 
-    if (!admin) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      if (!admin) {
+        throw new UnauthorizedException('Credenciales inválidas');
+      }
+
+      const isPasswordValid = this.encryptionService.comparePassword(
+        password,
+        admin.password,
+      );
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Credenciales inválidas');
+      }
+
+      if (!admin.enabled) {
+        throw new UnauthorizedException('Usuario desactivado');
+      }
+
+      const authData = {
+        id: admin.id,
+        photo: admin.photo || '',
+        name: admin.name || '',
+        surname: admin.surname || '',
+        enabled: admin.enabled || false,
+        isLoggedIn: true,
+        role: {
+          id: admin.role?.rolesId || 0,
+          name: admin.role?.name || '',
+        },
+      };
+
+      this.logger.log('Administrador autenticado exitosamente', {
+        id: admin.id,
+      });
+      return authData;
+    } catch (error) {
+      this.logger.error(
+        `Error al validar administrador con email ${email}`,
+        error,
+      );
+      throw error;
     }
-
-    const isPasswordValid = this.encryptionService.comparePassword(
-      password,
-      admin.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciales inválidas');
-    }
-
-    if (!admin.enabled) {
-      throw new UnauthorizedException('Usuario desactivado');
-    }
-
-    return {
-      id: admin.id,
-      photo: admin.photo || '',
-      name: admin.name || '',
-      surname: admin.surname || '',
-      enabled: admin.enabled || false,
-      isLoggedIn: true,
-      role: {
-        id: admin.role?.rolesId || 0,
-        name: admin.role?.name || '',
-      },
-    };
   }
 
   async updateLoginStatus(adminId: string, isLoggedIn: boolean): Promise<void> {
-    await this.adminRepository.update(
-      { id: adminId },
-      { isLoggedIn, updatedAt: new Date() },
-    );
+    try {
+      await this.adminRepository.update(
+        { id: adminId },
+        { isLoggedIn, updatedAt: new Date() },
+      );
+      this.logger.log(`Estado de login actualizado para admin ${adminId}`, {
+        isLoggedIn,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error al actualizar estado de login para admin ${adminId}`,
+        error,
+      );
+      throw error;
+    }
   }
 
   async initiatePasswordRecovery(email: string): Promise<void> {
-    const admin = await this.adminRepository.findOne({
-      where: { email, deletedAt: IsNull() },
-    });
+    try {
+      const admin = await this.adminRepository.findOne({
+        where: { email, deletedAt: IsNull() },
+      });
 
-    if (!admin) {
-      throw new NotFoundException('Usuario no encontrado');
+      if (!admin) {
+        throw new Error(`Usuario con email ${email} no encontrado`);
+      }
+
+      const resetToken = uuidv4();
+      const resetExpires = new Date(Date.now() + 3600000); // 1 hora
+
+      await this.adminRepository.update(
+        { id: admin.id },
+        {
+          resetToken,
+          resetExpires,
+          updatedAt: new Date(),
+        },
+      );
+
+      this.logger.log('Recuperación de contraseña iniciada', {
+        email,
+        adminId: admin.id,
+      });
+
+      // TODO: Implementar envío de email con el token
+      // await this.emailService.sendPasswordRecoveryEmail(email, resetToken);
+    } catch (error) {
+      this.logger.error(
+        `Error al iniciar recuperación de contraseña para ${email}`,
+        error,
+      );
+      throw error;
     }
-
-    const resetToken = uuidv4();
-    const resetExpires = new Date(Date.now() + 3600000); // 1 hora
-
-    await this.adminRepository.update(
-      { id: admin.id },
-      {
-        resetToken,
-        resetExpires,
-        updatedAt: new Date(),
-      },
-    );
-
-    // TODO: Implementar envío de email con el token
-    // await this.emailService.sendPasswordRecoveryEmail(email, resetToken);
   }
 
   async changePassword(uuid: string, newPassword: string): Promise<void> {
-    const admin = await this.adminRepository.findOne({
-      where: {
-        resetToken: uuid,
-        deletedAt: IsNull(),
-      },
-    });
+    try {
+      const admin = await this.adminRepository.findOne({
+        where: {
+          resetToken: uuid,
+          deletedAt: IsNull(),
+        },
+      });
 
-    if (!admin) {
-      throw new NotFoundException('Token de recuperación inválido');
+      if (!admin) {
+        throw new Error(`Token de recuperación ${uuid} no encontrado`);
+      }
+
+      if (!admin.resetExpires || admin.resetExpires < new Date()) {
+        throw new UnauthorizedException('Token de recuperación expirado');
+      }
+
+      const hashedPassword = this.encryptionService.encryptPasswd(newPassword);
+
+      await this.adminRepository.update(
+        { id: admin.id },
+        {
+          password: hashedPassword,
+          resetToken: undefined,
+          resetExpires: undefined,
+          updatedAt: new Date(),
+        },
+      );
+
+      this.logger.log('Contraseña cambiada exitosamente', {
+        adminId: admin.id,
+      });
+    } catch (error) {
+      this.logger.error(`Error al cambiar contraseña con token ${uuid}`, error);
+      throw error;
     }
-
-    if (!admin.resetExpires || admin.resetExpires < new Date()) {
-      throw new UnauthorizedException('Token de recuperación expirado');
-    }
-
-    const hashedPassword = this.encryptionService.encryptPasswd(newPassword);
-
-    await this.adminRepository.update(
-      { id: admin.id },
-      {
-        password: hashedPassword,
-        resetToken: undefined,
-        resetExpires: undefined,
-        updatedAt: new Date(),
-      },
-    );
   }
 }
